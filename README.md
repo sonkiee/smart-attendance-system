@@ -2,6 +2,9 @@
 
 This repository contains the codebase for the Final Year Project: **Design and Implementation of Attendance System with Multi Factor Authentication**.
 
+> **Project Status:** Academic Project / Active Development  
+> *This repository is maintained solely as a final year academic project. It is not actively maintained for production use.*
+
 ## Project Architecture
 
 The system is structured as a monorepo containing three main components:
