@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login - Precision Metric Attendance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#c3c6d7",
+                    "on-surface-variant": "#434655",
+                    "inverse-surface": "#2e3132",
+                    "outline": "#737686",
+                    "surface-dim": "#d9dadb",
+                    "tertiary-fixed": "#ffdad6",
+                    "secondary-fixed": "#85f8c4",
+                    "on-primary-fixed": "#00174b",
+                    "on-tertiary-fixed-variant": "#93000b",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#00714e",
+                    "secondary-fixed-dim": "#68dba9",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-tint": "#0053db",
+                    "primary-fixed": "#dbe1ff",
+                    "on-tertiary-container": "#ffecea",
+                    "surface-container": "#edeeef",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary-container": "#d52022",
+                    "secondary": "#006c4a",
+                    "on-primary-container": "#eeefff",
+                    "surface-container-high": "#e7e8e9",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb4ab",
+                    "primary": "#004ac6",
+                    "on-secondary-fixed": "#002114",
+                    "surface": "#f8f9fa",
+                    "tertiary": "#ae0010",
+                    "secondary-container": "#82f5c1",
+                    "surface-bright": "#f8f9fa",
+                    "on-tertiary-fixed": "#410002",
+                    "background": "#f8f9fa",
+                    "on-background": "#191c1d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "16px",
+                    "gutter-mobile": "12px",
+                    "xs": "8px",
+                    "xl": "32px",
+                    "base": "4px",
+                    "sm": "12px",
+                    "margin-mobile": "16px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "caption": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        
+        .clinical-shadow {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .input-focus-ring:focus-within {
+            border-color: #004ac6;
+            box-shadow: 0 0 0 1px #004ac6;
+        }
+
+        .bg-mesh-blur {
+            filter: blur(80px);
+            opacity: 0.4;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col items-center justify-center overflow-x-hidden p-margin-mobile">
+<!-- Atmospheric Background Decoration -->
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+<div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-secondary-container bg-mesh-blur"></div>
+<div class="absolute top-[60%] -right-[10%] w-[50%] h-[50%] rounded-full bg-primary-fixed-dim bg-mesh-blur"></div>
+</div>
+<main class="w-full max-w-[420px] z-10">
+<!-- Brand Header Section -->
+<div class="flex flex-col items-center mb-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+<div class="w-16 h-16 bg-primary-container rounded-xl flex items-center justify-center mb-md clinical-shadow">
+<span class="material-symbols-outlined text-on-primary text-[40px]" data-icon="location_on" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs tracking-tight">Welcome Back</h1>
+<p class="font-body-md text-on-surface-variant text-center px-lg">Secure biometric and geofence-verified attendance for modern campuses.</p>
+</div>
+<!-- Login Card -->
+<section class="bg-surface-container-lowest rounded-[24px] p-lg border border-outline-variant/30 clinical-shadow animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150">
+<form class="space-y-lg" id="loginForm">
+<!-- ID Field -->
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-outline px-xs" for="id_field">Student or Staff ID</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-md flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors" data-icon="badge">badge</span>
+</div>
+<input class="w-full h-[56px] bg-surface-container-low border border-outline-variant rounded-xl pl-[52px] pr-md font-body-lg text-on-surface placeholder:text-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" id="id_field" placeholder="Enter your unique ID" required="" type="text"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-base">
+<div class="flex justify-between items-center px-xs">
+<label class="font-label-md text-label-md text-outline" for="password_field">Password</label>
+<a class="font-label-md text-label-md text-primary hover:underline transition-all" href="#">Forgot Password?</a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-md flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors" data-icon="lock">lock</span>
+</div>
+<input class="w-full h-[56px] bg-surface-container-low border border-outline-variant rounded-xl pl-[52px] pr-[52px] font-body-lg text-on-surface placeholder:text-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" id="password_field" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-md flex items-center text-outline-variant hover:text-outline transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Sign In Action -->
+<button class="w-full h-[56px] bg-primary-container text-on-primary font-headline-md text-headline-md rounded-xl hover:bg-primary active:scale-[0.98] transition-all duration-200 clinical-shadow flex items-center justify-center gap-xs" type="submit">
+                    Sign In
+                    <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<!-- Divider -->
+<div class="relative flex items-center py-xs">
+<div class="flex-grow border-t border-outline-variant/30"></div>
+<span class="flex-shrink mx-md font-label-md text-label-md text-outline-variant uppercase">Quick Access</span>
+<div class="flex-grow border-t border-outline-variant/30"></div>
+</div>
+<!-- Biometric Options -->
+<div class="grid grid-cols-2 gap-md">
+<button class="flex flex-col items-center justify-center py-md rounded-xl border border-outline-variant/30 bg-surface-container-lowest hover:bg-surface-container transition-colors active:scale-95 duration-200" type="button">
+<span class="material-symbols-outlined text-on-surface-variant text-[32px] mb-xs" data-icon="fingerprint">fingerprint</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Touch ID</span>
+</button>
+<button class="flex flex-col items-center justify-center py-md rounded-xl border border-outline-variant/30 bg-surface-container-lowest hover:bg-surface-container transition-colors active:scale-95 duration-200" type="button">
+<span class="material-symbols-outlined text-on-surface-variant text-[32px] mb-xs" data-icon="face">face</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Face ID</span>
+</button>
+</div>
+</form>
+</section>
+<!-- Footer Links -->
+<footer class="mt-xl text-center animate-in fade-in duration-1000 delay-500">
+<p class="font-body-md text-on-surface-variant">
+                Don't have an account yet? 
+                <a class="font-headline-md text-primary font-bold hover:underline ml-xs" href="#">Register Account</a>
+</p>
+<div class="mt-lg flex items-center justify-center gap-md">
+<div class="flex items-center gap-xs px-md py-xs bg-secondary-container/10 rounded-full">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-label-md text-label-md text-secondary">System Online</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="language">language</span>
+<span class="font-label-md text-label-md text-outline">v2.4.0-precision</span>
+</div>
+</div>
+</footer>
+</main>
+<script>
+        // Simple micro-interaction for the password visibility toggle
+        const toggleBtn = document.querySelector('button[type="button"] .material-symbols-outlined[data-icon="visibility"]');
+        const passwordInput = document.getElementById('password_field');
+
+        if (toggleBtn && passwordInput) {
+            toggleBtn.parentElement.addEventListener('click', () => {
+                const isPassword = passwordInput.type === 'password';
+                passwordInput.type = isPassword ? 'text' : 'password';
+                toggleBtn.textContent = isPassword ? 'visibility_off' : 'visibility';
+            });
+        }
+
+        // Form submission animation
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin" data-icon="progress_activity">progress_activity</span>';
+            
+            // Mocking a successful login redirection
+            setTimeout(() => {
+                btn.classList.replace('bg-primary-container', 'bg-secondary');
+                btn.innerHTML = '<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>';
+                setTimeout(() => {
+                    alert('Authorized. Redirecting to dashboard...');
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }, 1000);
+            }, 1500);
+        });
+    </script>
+</body></html>

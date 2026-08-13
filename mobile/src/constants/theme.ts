@@ -1,0 +1,100 @@
+export const Theme = {
+  colors: {
+    primary: '#004ac6',
+    onPrimary: '#ffffff',
+    secondary: '#006c4a',
+    onSecondary: '#ffffff',
+    tertiary: '#ae0010',
+    onTertiary: '#ffffff',
+    background: '#f8f9fa',
+    onBackground: '#191c1d',
+    surface: '#f8f9fa',
+    onSurface: '#191c1d',
+    surfaceVariant: '#e1e3e4',
+    onSurfaceVariant: '#434655',
+    outline: '#737686',
+    outlineVariant: '#c3c6d7',
+    surfaceContainerLowest: '#ffffff',
+    surfaceContainerLow: '#f3f4f5',
+    surfaceContainer: '#edeeef',
+    surfaceContainerHigh: '#e7e8e9',
+    surfaceContainerHighest: '#e1e3e4',
+    secondaryContainer: '#82f5c1',
+    onSecondaryContainer: '#00714e',
+    error: '#ba1a1a',
+    onError: '#ffffff',
+    errorContainer: '#ffdad6',
+    onErrorContainer: '#93000a',
+    primaryContainer: '#2563eb',
+    onPrimaryContainer: '#eeefff',
+  },
+  typography: {
+    headlineLg: {
+      fontFamily: 'Inter-Bold',
+      fontSize: 28,
+      lineHeight: 34,
+      letterSpacing: -0.56, // -0.02em for 28px
+    },
+    headlineMd: {
+      fontFamily: 'Inter-SemiBold',
+      fontSize: 20,
+      lineHeight: 28,
+      letterSpacing: -0.2, // -0.01em for 20px
+    },
+    bodyLg: {
+      fontFamily: 'Inter-Regular',
+      fontSize: 16,
+      lineHeight: 24,
+    },
+    bodyMd: {
+      fontFamily: 'Inter-Regular',
+      fontSize: 14,
+      lineHeight: 20,
+    },
+    labelMd: {
+      fontFamily: 'Inter-SemiBold',
+      fontSize: 12,
+      lineHeight: 16,
+      letterSpacing: 0.6, // 0.05em for 12px
+    },
+    caption: {
+      fontFamily: 'Inter-Regular',
+      fontSize: 12,
+      lineHeight: 16,
+    },
+  },
+  rounded: {
+    sm: 4,
+    default: 8,
+    md: 12,
+    lg: 16,
+    xl: 24,
+    full: 9999,
+  },
+  spacing: {
+    base: 4,
+    xs: 8,
+    sm: 12,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    marginMobile: 16,
+    gutterMobile: 12,
+  },
+  shadows: {
+    soft: {
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.05,
+      shadowRadius: 12,
+      elevation: 3, // Android shadow fallback
+    },
+    attendanceButton: {
+      shadowColor: '#004ac6',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.3,
+      shadowRadius: 15,
+      elevation: 6,
+    },
+  },
+};

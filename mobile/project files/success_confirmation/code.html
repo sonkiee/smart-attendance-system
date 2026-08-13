@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Attendance Success</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#ffb4ab",
+                        "outline": "#737686",
+                        "surface-container-high": "#e7e8e9",
+                        "on-secondary-container": "#00714e",
+                        "primary-container": "#2563eb",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-container": "#edeeef",
+                        "surface-bright": "#f8f9fa",
+                        "tertiary-fixed": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#d52022",
+                        "on-background": "#191c1d",
+                        "surface-dim": "#d9dadb",
+                        "secondary-container": "#82f5c1",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-surface": "#191c1d",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#410002",
+                        "on-secondary-fixed-variant": "#005137",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#ae0010",
+                        "inverse-primary": "#b4c5ff",
+                        "secondary-fixed-dim": "#68dba9",
+                        "on-secondary-fixed": "#002114",
+                        "on-error": "#ffffff",
+                        "background": "#f8f9fa",
+                        "surface-variant": "#e1e3e4",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-tint": "#0053db",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface-container-low": "#f3f4f5",
+                        "primary": "#004ac6",
+                        "inverse-surface": "#2e3132",
+                        "on-surface-variant": "#434655",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-tertiary-fixed-variant": "#93000b",
+                        "secondary": "#006c4a",
+                        "on-primary-fixed": "#00174b",
+                        "secondary-fixed": "#85f8c4",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "surface": "#f8f9fa",
+                        "outline-variant": "#c3c6d7",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#ffecea"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "xl": "32px",
+                        "gutter-mobile": "12px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "xs": "8px",
+                        "lg": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        @keyframes scale-in {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fade-up {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes success-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 108, 74, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(0, 108, 74, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 108, 74, 0); }
+        }
+        .animate-scale-in { animation: scale-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .animate-fade-up { animation: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .success-checkmark { animation: success-pulse 2s infinite; }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden antialiased">
+<!-- Success Container -->
+<main class="relative min-h-screen flex flex-col items-center justify-center px-margin-mobile">
+<!-- Background Subtle Pattern -->
+<div class="absolute inset-0 z-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#006c4a 0.5px, transparent 0.5px); background-size: 24px 24px;">
+</div>
+<!-- Success Content -->
+<div class="relative z-10 w-full max-w-sm flex flex-col items-center">
+<!-- Animated Emerald Checkmark Container -->
+<div class="animate-scale-in flex items-center justify-center w-32 h-32 mb-lg bg-secondary-container rounded-full success-checkmark">
+<span class="material-symbols-outlined text-[64px] text-on-secondary-container" style="font-variation-settings: 'FILL' 1, 'wght' 700;">
+                    check_circle
+                </span>
+</div>
+<!-- Header Section -->
+<div class="animate-fade-up flex flex-col items-center text-center space-y-xs" style="animation-delay: 0.2s; opacity: 0;">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Attendance Marked!</h1>
+<p class="font-headline-md text-headline-md text-primary font-bold">CSC 423: Compiler Construction I</p>
+</div>
+<!-- Detail Cards (Bento-style layout for clean reliability) -->
+<div class="animate-fade-up grid grid-cols-1 gap-sm w-full mt-xl" style="animation-delay: 0.4s; opacity: 0;">
+<!-- Timestamp Card -->
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl flex items-center shadow-sm">
+<div class="bg-surface-container-high w-12 h-12 rounded-lg flex items-center justify-center mr-md">
+<span class="material-symbols-outlined text-on-surface-variant">schedule</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-outline uppercase tracking-wider">Timestamp</span>
+<span class="font-body-lg text-body-lg font-bold text-on-surface">Today, 10:04 AM</span>
+</div>
+</div>
+<!-- Venue Card -->
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl flex items-center shadow-sm">
+<div class="bg-surface-container-high w-12 h-12 rounded-lg flex items-center justify-center mr-md">
+<span class="material-symbols-outlined text-on-surface-variant">location_on</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-outline uppercase tracking-wider">Venue</span>
+<span class="font-body-lg text-body-lg font-bold text-on-surface">Hall A2</span>
+</div>
+</div>
+<!-- Geofence Status Badge (Contextual Component) -->
+<div class="flex justify-center mt-xs">
+<div class="inline-flex items-center px-md py-xs bg-secondary/10 border border-secondary/20 rounded-full">
+<span class="w-2 h-2 rounded-full bg-secondary mr-xs"></span>
+<span class="font-label-md text-label-md text-secondary">Verified inside Geofence</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Primary Action -->
+<div class="fixed bottom-0 left-0 w-full p-lg bg-background/80 backdrop-blur-md animate-fade-up" style="animation-delay: 0.6s; opacity: 0;">
+<button class="w-full h-14 bg-primary text-on-primary rounded-xl font-headline-md text-headline-md flex items-center justify-center shadow-lg active:scale-95 transition-transform duration-200">
+                Done
+            </button>
+</div>
+</main>
+<!-- Map Contextual Element (Subtle, as backdrop or small card) -->
+<div class="hidden">
+<img data-alt="A minimalist architectural map of a modern university campus with clean lines, emerald green geofencing highlights, and a clinical, professional aesthetic. The map uses high-contrast light mode styling with soft ambient shadows and Electric Blue accents for navigation points. The overall mood is precise, authoritative, and technologically advanced." data-location="University Campus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDf3yogTKeNuKBNScFElc8JzTMfTR1Lpk01rKN0ZTiStg1PPt38UVAGl8We3h-CGJYfx4H0Ntsl4UqUsYx-hdvFUeujsUfbEZCg61eTa3DBbdy2AvGzb9HSJQe0rQVahYvqxScnD3Qm0I01IKVb7zZSKtAibnOYAovIa4oKV3Smq-lvHCNQnL4-VMJkemQ8hoWsLQkbS8fhQS8Vq11seld0JjrLxxJJbqFeDcO_6yna2LVI2_5lDzQ"/>
+</div>
+<script>
+        // Simple micro-interaction for button
+        document.querySelector('button').addEventListener('click', () => {
+            // This would normally navigate back to the dashboard/home
+            console.log('Returning to dashboard...');
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => {
+                window.location.reload(); // Placeholder action
+            }, 300);
+        });
+    </script>
+</body></html>

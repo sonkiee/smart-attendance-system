@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Attendance Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#ffb4ab",
+                    "outline": "#737686",
+                    "surface-container-high": "#e7e8e9",
+                    "on-secondary-container": "#00714e",
+                    "primary-container": "#2563eb",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "surface-container": "#edeeef",
+                    "surface-bright": "#f8f9fa",
+                    "tertiary-fixed": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "tertiary-container": "#d52022",
+                    "on-background": "#191c1d",
+                    "surface-dim": "#d9dadb",
+                    "secondary-container": "#82f5c1",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-surface": "#191c1d",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#410002",
+                    "on-secondary-fixed-variant": "#005137",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "tertiary": "#ae0010",
+                    "inverse-primary": "#b4c5ff",
+                    "secondary-fixed-dim": "#68dba9",
+                    "on-secondary-fixed": "#002114",
+                    "on-error": "#ffffff",
+                    "background": "#f8f9fa",
+                    "surface-variant": "#e1e3e4",
+                    "primary-fixed": "#dbe1ff",
+                    "surface-tint": "#0053db",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-container-low": "#f3f4f5",
+                    "primary": "#004ac6",
+                    "inverse-surface": "#2e3132",
+                    "on-surface-variant": "#434655",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-tertiary-fixed-variant": "#93000b",
+                    "secondary": "#006c4a",
+                    "on-primary-fixed": "#00174b",
+                    "secondary-fixed": "#85f8c4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#eeefff",
+                    "surface": "#f8f9fa",
+                    "outline-variant": "#c3c6d7",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#ffecea"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "xl": "32px",
+                    "gutter-mobile": "12px",
+                    "sm": "12px",
+                    "md": "16px",
+                    "xs": "8px",
+                    "lg": "24px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "caption": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8F9FA; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .geofence-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.3; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        .attendance-button-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 74, 198, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- Top App Bar -->
+<header class="w-full top-0 sticky z-50 bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-margin-mobile py-md">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-fixed">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a young male university student with a warm, confident expression. He is wearing a clean, modern white shirt against a soft, neutral grey studio background. The lighting is bright and clinical, reflecting a high-contrast minimalist aesthetic. The image is sharp and high-resolution, conveying a sense of academic reliability and focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgc2g5rH3Wgo0FEkDdDNbfkpPMGqczIkHc83eTfe3CTknwUhqHhVijtQmS6_rcmWAWhYF_wkSlTohr-DUcCw1CiHx-OWnqpwuJpfFHRN4OBiPkJw0ZHufSDsGIt7VXn6uinFAt2Vv2QNGOVCPD0bImoV_cctexyAwICRSMHpn0C5NW7pwfEUclDKEIzGNiHWv18OReT0t_kkRrMjcpdwkdO4VF2pgLD1tkvkAKhbEmuUGEJxzQ_Y0"/>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Hello, Kennedy</h1>
+<p class="font-label-md text-label-md text-outline">CSC 423 • Computer Science</p>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="px-margin-mobile pt-md space-y-md">
+<!-- Status Indicator Section -->
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-xs px-sm py-xs bg-secondary-container/10 rounded-full border border-secondary/20">
+<span class="w-2 h-2 bg-secondary rounded-full geofence-pulse"></span>
+<span class="font-label-md text-label-md text-secondary">Inside Geofence 🟢</span>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md text-outline block">Today, Oct 24</span>
+<span class="font-body-md text-body-md font-semibold">09:42 AM</span>
+</div>
+</div>
+<!-- Dynamic Active Class Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-sm">
+<span class="bg-primary/10 text-primary font-label-md text-label-md px-sm py-1 rounded-full uppercase tracking-wider">Active Now</span>
+<span class="material-symbols-outlined text-outline">more_vert</span>
+</div>
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-xs">CSC 423: Compiler Construction I</h2>
+<div class="grid grid-cols-2 gap-sm mt-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">location_on</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Hall A2</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">schedule</span>
+<span class="font-body-md text-body-md text-on-surface-variant">10:00 - 12:00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Large CTA Button -->
+<div class="py-sm">
+<button class="w-full h-14 bg-primary text-on-primary rounded-xl font-headline-md text-headline-md flex items-center justify-center gap-sm active:scale-95 transition-all attendance-button-shadow" id="ctaBtn" onclick="markAttendance()">
+<span class="material-symbols-outlined" id="ctaIcon">fingerprint</span>
+<span id="ctaText">MARK ATTENDANCE</span>
+</button>
+</div>
+<!-- Venue Preview (Map) -->
+<div class="rounded-xl overflow-hidden border border-outline-variant h-32 relative">
+<div class="w-full h-full bg-cover bg-center grayscale-[0.5] contrast-[1.1]" data-location="Lagos University Campus" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDrD47C7tIHpYtvRiO6LWSBy0tdbDWIiyxIKa8InL7hkJDaIMwHx2KrQVZAMUBbWW-Ug0QTwoa8Uu0oKoxGivdBbPpKzSRrrQ0WQHDxFrJqPV2cFLZzNODb9u5H9B7AxvzG3Z72Xy8ZmtEikk84WTLi8IMhVRT150ioYlkh2xWJmr0pcw8LfBOwUIqzCDdh696Dhzpi7VEfhbSvWnCfQO7d04pDx9oKSdsuxZwC393_7OV88N4aZmA')"></div>
+<div class="absolute inset-0 bg-black/5 flex items-center justify-center">
+<div class="w-16 h-16 bg-secondary/20 rounded-full border-2 border-secondary geofence-pulse flex items-center justify-center">
+<div class="w-3 h-3 bg-secondary rounded-full"></div>
+</div>
+</div>
+<div class="absolute bottom-2 left-2 bg-white/90 backdrop-blur px-sm py-1 rounded-lg border border-outline-variant">
+<span class="font-label-md text-label-md text-on-surface">Live Location: Hall A2 Area</span>
+</div>
+</div>
+<!-- Recent Activity Section -->
+<section class="space-y-sm">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md font-semibold text-on-surface">Recent Activity</h3>
+<button class="font-label-md text-label-md text-primary">View All</button>
+</div>
+<div class="space-y-xs">
+<!-- Activity Item 1 -->
+<div class="flex items-center justify-between p-md bg-surface-container-low rounded-xl border border-transparent hover:border-outline-variant transition-all">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">code</span>
+</div>
+<div>
+<h4 class="font-body-md text-body-md font-semibold">CSC 401: Algorithms</h4>
+<p class="font-caption text-caption text-outline">Yesterday • 08:30 AM</p>
+</div>
+</div>
+<div class="bg-secondary/10 px-sm py-1 rounded-full">
+<span class="text-secondary font-label-md text-label-md font-bold uppercase">Present</span>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="flex items-center justify-between p-md bg-surface-container-low rounded-xl border border-transparent hover:border-outline-variant transition-all">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">database</span>
+</div>
+<div>
+<h4 class="font-body-md text-body-md font-semibold">CSC 411: DB Management</h4>
+<p class="font-caption text-caption text-outline">Oct 22 • 02:00 PM</p>
+</div>
+</div>
+<div class="bg-secondary/10 px-sm py-1 rounded-full">
+<span class="text-secondary font-label-md text-label-md font-bold uppercase">Present</span>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="flex items-center justify-between p-md bg-surface-container-low rounded-xl border border-transparent hover:border-outline-variant transition-all">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">terminal</span>
+</div>
+<div>
+<h4 class="font-body-md text-body-md font-semibold">CSC 421: OS Lab</h4>
+<p class="font-caption text-caption text-outline">Oct 21 • 11:00 AM</p>
+</div>
+</div>
+<div class="bg-secondary/10 px-sm py-1 rounded-full">
+<span class="text-secondary font-label-md text-label-md font-bold uppercase">Present</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter-mobile py-xs bg-surface-container-lowest dark:bg-surface-container-low border-t border-outline-variant dark:border-outline shadow-lg">
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-xl px-md py-xs active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-md py-xs hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-md py-xs hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        function markAttendance() {
+            const btn = document.getElementById('ctaBtn');
+            const text = document.getElementById('ctaText');
+            const icon = document.getElementById('ctaIcon');
+
+            // Success Transition Animation
+            btn.classList.replace('bg-primary', 'bg-secondary');
+            btn.classList.remove('attendance-button-shadow');
+            text.innerText = 'SUCCESSFULLY MARKED';
+            icon.innerText = 'check_circle';
+            
+            // Haptic/Visual Feedback
+            btn.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+            }, 200);
+
+            // Confetti or visual success micro-interaction could go here
+        }
+
+        // Intersection Observer for fade-in animations on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = document.querySelectorAll('main > *');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(10px)';
+                el.style.transition = `all 0.4s ease-out ${index * 0.1}s`;
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, 50);
+            });
+        });
+    </script>
+</body></html>

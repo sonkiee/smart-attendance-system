@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Check-In Verification</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .radar-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.2; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .modal-slide-up {
+            animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slide-up {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .checkmark-draw {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: dash 0.6s ease-in-out forwards;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#ffb4ab",
+                        "outline": "#737686",
+                        "surface-container-high": "#e7e8e9",
+                        "on-secondary-container": "#00714e",
+                        "primary-container": "#2563eb",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-container": "#edeeef",
+                        "surface-bright": "#f8f9fa",
+                        "tertiary-fixed": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#d52022",
+                        "on-background": "#191c1d",
+                        "surface-dim": "#d9dadb",
+                        "secondary-container": "#82f5c1",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-surface": "#191c1d",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#410002",
+                        "on-secondary-fixed-variant": "#005137",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#ae0010",
+                        "inverse-primary": "#b4c5ff",
+                        "secondary-fixed-dim": "#68dba9",
+                        "on-secondary-fixed": "#002114",
+                        "on-error": "#ffffff",
+                        "background": "#f8f9fa",
+                        "surface-variant": "#e1e3e4",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-tint": "#0053db",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface-container-low": "#f3f4f5",
+                        "primary": "#004ac6",
+                        "inverse-surface": "#2e3132",
+                        "on-surface-variant": "#434655",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-tertiary-fixed-variant": "#93000b",
+                        "secondary": "#006c4a",
+                        "on-primary-fixed": "#00174b",
+                        "secondary-fixed": "#85f8c4",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "surface": "#f8f9fa",
+                        "outline-variant": "#c3c6d7",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#ffecea"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "xl": "32px",
+                        "gutter-mobile": "12px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "xs": "8px",
+                        "lg": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface font-body-md text-on-surface min-h-screen">
+<!-- Main Content Background (Mock Home Screen) -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-margin-mobile py-md w-full z-10">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a young university student, looking forward with a friendly smile. The lighting is soft and natural, emphasizing a bright, clinical academia setting. The color palette is composed of clean whites and soft blues, matching a high-end educational app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVBse0a0N7yI4_iWp52caHmkjhGpajpFNIosHZ_N_NY0vrJ9aoJhMOeRSLxrUlQHQaIIzBdW6Qmff5z5zjn9rmbJ554WI8b3m8OPuECVhQE1BU2sC9OmD5tf1NMhNlTVn0tirzdO7wgz6FOOFyH5eMavSHuiqUGRDySlGnWDbX7xEUOjT0ot143XOF-kI81aRwQi_DFjrGaIJGTsRWqP87WXohNDnNtvr-1SnHodtcYQ3WqJnj9Oc"/>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Good Morning, Student</h1>
+</div>
+<button class="active:scale-95 transition-transform p-xs rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="px-margin-mobile pt-lg pb-xl space-y-md">
+<!-- Dashboard Mock Content -->
+<div class="p-lg bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm space-y-md">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-on-surface-variant font-label-md">CURRENT CLASS</p>
+<h2 class="font-headline-md text-headline-md text-primary">Advanced Algorithms</h2>
+</div>
+<div class="bg-secondary-container/20 text-secondary px-sm py-xs rounded-full font-label-md">
+                    Hall A2
+                </div>
+</div>
+<div class="h-32 rounded-lg relative overflow-hidden" data-location="University Hall A2" style="">
+<div class="w-full h-full bg-cover bg-center" data-alt="A clean, minimalist 2D architectural floor plan or map view of a university lecture hall. The design uses a sophisticated light-mode palette with electric blue boundaries and a soft green emerald circle indicating a geofenced area. The atmosphere is professional, clinical, and high-contrast." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCBCfJ4Q0mK7fQSBxQRMGKvoLfuudd9xwq9L877ajTETr5NF2JB_2-ejKWihtse6yX1S3Z-yV-X-5r-ZaDLjBOZ00xd11dut7xkO4dpcVI3SJsayN5I3ntISaJpDyv6micI-lUTzBRPYY1dENT009edirFw4Q48IxVotxpBCtIaq8mf_1-rNC9n7QJO3wHmKS9p-SISPg_pNoKovble8q9z0kU0__b66DxsH8ZyRfm2R1ZoWoDQLcE')"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-16 h-16 bg-primary/10 rounded-full border-2 border-primary animate-pulse"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="p-md bg-surface-container-lowest rounded-xl border border-outline-variant">
+<p class="text-on-surface-variant font-label-md">START TIME</p>
+<p class="font-headline-md text-headline-md">09:00 AM</p>
+</div>
+<div class="p-md bg-surface-container-lowest rounded-xl border border-outline-variant">
+<p class="text-on-surface-variant font-label-md">END TIME</p>
+<p class="font-headline-md text-headline-md">11:00 AM</p>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-md pt-md">Recent Activity</h3>
+<div class="space-y-sm">
+<div class="flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-outline-variant">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container">check_circle</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md font-bold">Data Structures</p>
+<p class="text-on-surface-variant text-caption">Oct 24, 2023 • 10:02 AM</p>
+</div>
+<span class="text-secondary font-label-md">PRESENT</span>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-gutter-mobile py-xs bg-surface-container-lowest dark:bg-surface-container-low shadow-lg border-t border-outline-variant z-40">
+<div class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-xl px-md py-xs active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-md">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-md py-xs hover:bg-surface-container-high transition-colors active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md">History</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-md py-xs hover:bg-surface-container-high transition-colors active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md">Profile</span>
+</div>
+</nav>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-end justify-center transition-opacity duration-300" id="modalOverlay">
+<!-- Bottom Sheet Modal -->
+<div class="modal-slide-up w-full max-w-lg bg-surface rounded-t-[32px] p-xl space-y-lg shadow-2xl relative" id="bottomSheet">
+<!-- Drag Handle -->
+<div class="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-outline-variant rounded-full"></div>
+<div class="flex flex-col items-center justify-center space-y-xl py-lg text-center" id="verificationState">
+<!-- State 1: Verifying -->
+<div class="flex flex-col items-center space-y-lg" id="step1">
+<div class="relative w-32 h-32 flex items-center justify-center">
+<div class="absolute inset-0 radar-pulse bg-primary/20 rounded-full"></div>
+<div class="absolute inset-2 radar-pulse bg-primary/10 rounded-full" style="animation-delay: 0.5s"></div>
+<div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-lg relative z-10">
+<span class="material-symbols-outlined text-white text-[32px] animate-pulse">location_searching</span>
+</div>
+</div>
+<div>
+<h2 class="font-headline-lg text-headline-lg">Verifying location...</h2>
+<p class="text-on-surface-variant font-body-md mt-xs">Stay within the room perimeter</p>
+</div>
+</div>
+<!-- State 2: Verified (Hidden initially) -->
+<div class="hidden flex flex-col items-center space-y-lg" id="step2">
+<div class="w-24 h-24 bg-secondary rounded-full flex items-center justify-center shadow-lg">
+<svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewbox="0 0 24 24">
+<polyline class="checkmark-draw" points="20 6 9 17 4 12"></polyline>
+</svg>
+</div>
+<div>
+<h2 class="font-headline-lg text-headline-lg text-secondary">Geofence Verified</h2>
+<p class="text-on-surface-variant font-body-md mt-xs">Location matched: <span class="font-bold">Hall A2</span></p>
+</div>
+</div>
+<!-- Biometric Section -->
+<div class="w-full pt-lg opacity-0 translate-y-4 transition-all duration-500" id="biometricPrompt">
+<button class="w-full h-14 bg-primary text-white rounded-xl font-headline-md flex items-center justify-center gap-md hover:brightness-110 active:scale-[0.98] transition-all shadow-md" onclick="handleBiometric()">
+<span class="material-symbols-outlined">drafts</span>
+                        Verify Identity
+                    </button>
+<p class="mt-md text-on-surface-variant font-label-md">
+                        Use PIN if Biometrics fail
+                    </p>
+</div>
+</div>
+</div>
+</div>
+<script>
+        // Simple state transition logic
+        window.addEventListener('load', () => {
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const bio = document.getElementById('biometricPrompt');
+            const overlay = document.getElementById('modalOverlay');
+
+            // Simulate Location verification
+            setTimeout(() => {
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                
+                // Show biometric prompt after verification
+                setTimeout(() => {
+                    bio.classList.remove('opacity-0', 'translate-y-4');
+                }, 300);
+            }, 2500);
+        });
+
+        function handleBiometric() {
+            const bioBtn = document.querySelector('#biometricPrompt button');
+            bioBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Processing...';
+            bioBtn.disabled = true;
+
+            setTimeout(() => {
+                bioBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Success';
+                bioBtn.classList.replace('bg-primary', 'bg-secondary');
+                
+                // Close modal after success
+                setTimeout(() => {
+                    document.getElementById('modalOverlay').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('modalOverlay').style.display = 'none';
+                    }, 300);
+                }, 1000);
+            }, 1500);
+        }
+
+        // Close on backdrop click (simulated)
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if(e.target === document.getElementById('modalOverlay')) {
+                document.getElementById('modalOverlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('modalOverlay').style.display = 'none';
+                }, 300);
+            }
+        });
+    </script>
+</body></html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Profile - Geofence Attendance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#00174b",
+                        "inverse-surface": "#2e3132",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#005137",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-variant": "#e1e3e4",
+                        "inverse-on-surface": "#f0f1f2",
+                        "outline": "#737686",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-tertiary-fixed-variant": "#93000b",
+                        "on-surface-variant": "#434655",
+                        "secondary-fixed": "#85f8c4",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#68dba9",
+                        "surface-container": "#edeeef",
+                        "tertiary": "#ae0010",
+                        "on-primary-container": "#eeefff",
+                        "background": "#f8f9fa",
+                        "surface-dim": "#d9dadb",
+                        "secondary-container": "#82f5c1",
+                        "on-tertiary-container": "#ffecea",
+                        "on-tertiary-fixed": "#410002",
+                        "on-secondary-container": "#00714e",
+                        "surface-container-high": "#e7e8e9",
+                        "primary-fixed": "#dbe1ff",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#2563eb",
+                        "inverse-primary": "#b4c5ff",
+                        "tertiary-fixed-dim": "#ffb4ab",
+                        "tertiary-container": "#d52022",
+                        "primary": "#004ac6",
+                        "on-secondary-fixed": "#002114",
+                        "surface-container-low": "#f3f4f5",
+                        "outline-variant": "#c3c6d7",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdad6",
+                        "secondary": "#006c4a",
+                        "surface-tint": "#0053db",
+                        "on-background": "#191c1d",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#191c1d",
+                        "surface-bright": "#f8f9fa",
+                        "error": "#ba1a1a",
+                        "surface": "#f8f9fa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter-mobile": "12px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "xs": "8px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "sm": "12px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .profile-card-shadow {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-50 bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-margin-mobile py-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a young university student named Kennedy with a friendly expression. The lighting is bright and clean, reflecting a high-contrast minimalist aesthetic. The background is a soft, neutral gray, keeping the focus entirely on the student's face. The overall mood is academic and reliable." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmt3dia3CZ-tY8qjF-fT_I1GPiCy78ooaSVQd3ZR9C65NUwf38Xuaxv0fs1kgAPB3g-0aAb1eGNbtXxldIVYV4f5mt0Q6hEtH57SrUBwkO-isYXyxLrOhx3y72d8n9hyXIlul7uUOV1uprtM7OK5LWsORTJ_PkarwmSWLajEFzSV5fVTWy8YFVb_JA1Sifl8XBusRRcQLAp5T2tktho_hlPfKzSLUKMttcO1SC-5E-Z0o2ym7X1_Y"/>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Profile</h1>
+</div>
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed-dim hover:bg-surface-container transition-colors p-xs rounded-full active:scale-95 transition-transform">
+            notifications
+        </button>
+</header>
+<main class="px-margin-mobile pt-md pb-32 max-w-md mx-auto">
+<!-- Hero Profile Section -->
+<section class="bg-surface-container-lowest rounded-xl p-lg profile-card-shadow border border-outline-variant mb-lg flex flex-col items-center text-center">
+<div class="relative mb-md">
+<div class="w-24 h-24 rounded-full overflow-hidden border-4 border-primary-fixed shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A close-up, high-quality headshot of a student for an identification card. The student, Kennedy, has a calm and confident demeanor. The image features a bright, clinical lighting setup against a minimalist white environment. High-contrast details and a professional, modern visual style are maintained throughout the composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_Zm0PocLuqsBQ0txERXF2PeOgCJipXt2_tUsr-PLrOB935Y898-MygB0PrS3ALgCEdx64UQwPuM3jDy13eYDCanD5Xjj6H-cjgigP8JVffcGCP_8LJiQwfppNUYCK5BCvRPeCzsToDl-xEM2WaIaj5sggcblaYfeOcD_REthh23V-xbFWY6szw72WMIwJoHap66UQHcqc4vYKMz_yDyfWy5Hb7p-BU1Qzlr8O5-lEnKsIfmXctfw"/>
+</div>
+<div class="absolute bottom-0 right-0 bg-secondary-container text-on-secondary-container p-1 rounded-full border-2 border-surface-container-lowest">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Kennedy</h2>
+<p class="font-body-md text-body-md text-outline font-semibold tracking-wider">ID: STU-8829104</p>
+<div class="mt-lg flex gap-xs w-full">
+<div class="flex-1 bg-surface-container-low rounded-lg py-sm px-xs border border-outline-variant">
+<span class="block font-label-md text-label-md text-outline">Level</span>
+<span class="font-headline-md text-headline-md text-primary">Senior</span>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-lg py-sm px-xs border border-outline-variant">
+<span class="block font-label-md text-label-md text-outline">Status</span>
+<div class="flex items-center justify-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-headline-md text-headline-md text-secondary">Active</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Bento Grid -->
+<section class="bento-grid mb-lg">
+<div class="col-span-2 bg-primary-container text-on-primary-container p-md rounded-xl profile-card-shadow flex justify-between items-center">
+<div>
+<h3 class="font-label-md text-label-md opacity-80 uppercase tracking-widest">Attendance Statistics</h3>
+<p class="font-headline-lg text-headline-lg mt-1">94.8%</p>
+</div>
+<div class="w-16 h-16 relative">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="opacity-20" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-width="4"></circle>
+<circle cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-dasharray="175.9" stroke-dashoffset="9" stroke-linecap="round" stroke-width="4"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center font-bold text-xs">↑4%</span>
+</div>
+</div>
+</section>
+<!-- Settings List -->
+<section class="space-y-sm">
+<h3 class="font-label-md text-label-md text-outline uppercase px-base">Academic & Personal</h3>
+<!-- Item: Personal Details -->
+<div class="group bg-surface-container-lowest p-md rounded-xl border border-outline-variant flex items-center justify-between hover:bg-surface-container-high transition-colors cursor-pointer active:scale-[0.98] transition-transform">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">badge</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-semibold text-on-surface">Personal Details</p>
+<p class="font-caption text-caption text-outline">Name, Contact, Address</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+<!-- Item: Course Enrollment -->
+<div class="group bg-surface-container-lowest p-md rounded-xl border border-outline-variant flex items-center justify-between hover:bg-surface-container-high transition-colors cursor-pointer active:scale-[0.98] transition-transform">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">school</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-semibold text-on-surface">Course Enrollment</p>
+<p class="font-caption text-caption text-outline">Computer Science (B.Sc)</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+<h3 class="font-label-md text-label-md text-outline uppercase px-base mt-lg">App Preferences</h3>
+<!-- Item: Account Settings -->
+<div class="group bg-surface-container-lowest p-md rounded-xl border border-outline-variant flex items-center justify-between hover:bg-surface-container-high transition-colors cursor-pointer active:scale-[0.98] transition-transform">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">settings</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-semibold text-on-surface">Account Settings</p>
+<p class="font-caption text-caption text-outline">Privacy, Security, Geofence</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+<!-- Item: Log Out -->
+<div class="group bg-surface-container-lowest p-md rounded-xl border border-outline-variant flex items-center justify-between hover:bg-error-container transition-colors cursor-pointer active:scale-[0.98] transition-transform">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-error-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-error">logout</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-semibold text-error">Log Out</p>
+<p class="font-caption text-caption text-error/60">Securely exit your session</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-gutter-mobile py-xs bg-surface-container-lowest dark:bg-surface-container-low shadow-lg border-t border-outline-variant dark:border-outline z-50">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-md py-xs hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-xl active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<!-- History -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-md py-xs hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-xl active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<!-- Profile (Active) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-xl px-md py-xs active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for list items
+        document.querySelectorAll('.group').forEach(item => {
+            item.addEventListener('click', function() {
+                const ripple = document.createElement('div');
+                ripple.className = 'absolute inset-0 bg-primary/5 rounded-xl pointer-events-none opacity-0 transition-opacity duration-300';
+                this.classList.add('relative');
+                this.appendChild(ripple);
+                setTimeout(() => ripple.classList.add('opacity-100'), 10);
+                setTimeout(() => {
+                    ripple.classList.remove('opacity-100');
+                    setTimeout(() => ripple.remove(), 300);
+                }, 400);
+            });
+        });
+    </script>
+</body></html>
