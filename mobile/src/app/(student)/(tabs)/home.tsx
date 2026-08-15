@@ -1,15 +1,18 @@
+import { Active } from "@/components/active";
+import { ActivityItem } from "@/components/activity-item";
+import Header from "@/components/header";
+import { courses } from "@/constants";
 import { Theme } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
   Easing,
+  FlatList,
   Modal,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -173,296 +176,25 @@ export default function StudentDashboard() {
       />
 
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.profileSection}>
-          <TouchableOpacity
-            onPress={handleBackToSelect}
-            style={styles.avatarContainer}
-          >
-            <Image
-              style={styles.avatar}
-              source={{
-                uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDgc2g5rH3Wgo0FEkDdDNbfkpPMGqczIkHc83eTfe3CTknwUhqHhVijtQmS6_rcmWAWhYF_wkSlTohr-DUcCw1CiHx-OWnqpwuJpfFHRN4OBiPkJw0ZHufSDsGIt7VXn6uinFAt2Vv2QNGOVCPD0bImoV_cctexyAwICRSMHpn0C5NW7pwfEUclDKEIzGNiHWv18OReT0t_kkRrMjcpdwkdO4VF2pgLD1tkvkAKhbEmuUGEJxzQ_Y0",
-              }}
-              contentFit="cover"
-            />
-          </TouchableOpacity>
-          <View>
-            <Text style={[styles.greeting, Theme.typography.headlineMd]}>
-              Hello, Kennedy
-            </Text>
-            <Text style={[styles.degreeText, Theme.typography.labelMd]}>
-              CSC 423 • Computer Science
-            </Text>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.notificationBtn} activeOpacity={0.7}>
-          <Ionicons
-            name="notifications-outline"
-            size={24}
-            color={Theme.colors.primary}
-          />
-        </TouchableOpacity>
-      </View>
+      <Header title="Hello," />
 
-      <ScrollView
+      <FlatList
+        data={courses}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <ActivityItem item={item} />}
+        ListHeaderComponent={
+          <>
+            <Active />
+            <View style={styles.recentActivityHeader}>
+              <Text>Recent Activity</Text>
+              <TouchableOpacity>
+                <Text>View All</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        }
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Proximity / Location Info */}
-        <View style={styles.statusRow}>
-          <View style={styles.geofenceBadge}>
-            <Animated.View
-              style={[
-                styles.geofenceDot,
-                { transform: [{ scale: mapPulseAnim }] },
-              ]}
-            />
-            <Text style={[styles.geofenceText, Theme.typography.labelMd]}>
-              Inside Geofence 🟢
-            </Text>
-          </View>
-          <View style={styles.dateTimeContainer}>
-            <Text style={[styles.dateText, Theme.typography.caption]}>
-              Today, Oct 24
-            </Text>
-            <Text
-              style={[
-                styles.timeText,
-                Theme.typography.bodyMd,
-                styles.semibold,
-              ]}
-            >
-              09:42 AM
-            </Text>
-          </View>
-        </View>
-
-        {/* Active Class Card */}
-        <View style={styles.activeClassCard}>
-          <View style={styles.cardDecorativeCircle} />
-          <View style={styles.activeTagRow}>
-            <View style={styles.activePill}>
-              <Text style={[styles.activePillText, Theme.typography.labelMd]}>
-                ACTIVE NOW
-              </Text>
-            </View>
-            <TouchableOpacity style={styles.moreBtn}>
-              <Ionicons
-                name="ellipsis-vertical"
-                size={20}
-                color={Theme.colors.outline}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <Text style={[styles.classTitle, Theme.typography.headlineMd]}>
-            CSC 423: Compiler Construction I
-          </Text>
-
-          <View style={styles.classDetailsGrid}>
-            <View style={styles.detailItem}>
-              <Ionicons
-                name="location"
-                size={20}
-                color={Theme.colors.primary}
-              />
-              <Text style={[styles.detailText, Theme.typography.bodyMd]}>
-                Hall A2
-              </Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Ionicons name="time" size={20} color={Theme.colors.primary} />
-              <Text style={[styles.detailText, Theme.typography.bodyMd]}>
-                10:00 - 12:00
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Large Mark Attendance Button */}
-        <TouchableOpacity
-          style={[styles.ctaButton, Theme.shadows.attendanceButton]}
-          activeOpacity={0.8}
-          onPress={handleMarkAttendancePress}
-        >
-          <Ionicons
-            name="finger-print"
-            size={24}
-            color={Theme.colors.onPrimary}
-          />
-          <Text style={[styles.ctaText, Theme.typography.headlineMd]}>
-            MARK ATTENDANCE
-          </Text>
-        </TouchableOpacity>
-
-        {/* Map Preview Card */}
-        <View style={styles.mapCard}>
-          <Image
-            style={styles.mapBackground}
-            source={{
-              uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDrD47C7tIHpYtvRiO6LWSBy0tdbDWIiyxIKa8InL7hkJDaIMwHx2KrQVZAMUBbWW-Ug0QTwoa8Uu0oKoxGivdBbPpKzSRrrQ0WQHDxFrJqPV2cFLZzNODb9u5H9B7AxvzG3Z72Xy8ZmtEikk84WTLi8IMhVRT150ioYlkh2xWJmr0pcw8LfBOwUIqzCDdh696Dhzpi7VEfhbSvWnCfQO7d04pDx9oKSdsuxZwC393_7OV88N4aZmA",
-            }}
-            contentFit="cover"
-          />
-          <View style={styles.mapOverlay}>
-            <Animated.View
-              style={[
-                styles.mapPulseRing,
-                {
-                  transform: [{ scale: mapPulseAnim }],
-                },
-              ]}
-            />
-            <View style={styles.mapDot} />
-          </View>
-          <View style={styles.mapLabel}>
-            <Text style={[styles.mapLabelText, Theme.typography.labelMd]}>
-              Live Location: Hall A2 Area
-            </Text>
-          </View>
-        </View>
-
-        {/* Recent Activity */}
-        <View style={styles.recentActivityHeader}>
-          <Text style={[styles.activityTitle, Theme.typography.headlineMd]}>
-            Recent Activity
-          </Text>
-          <TouchableOpacity>
-            <Text style={[styles.viewAllBtn, Theme.typography.labelMd]}>
-              View All
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.activityList}>
-          {/* Item 1 */}
-          <View style={styles.activityItem}>
-            <View style={styles.activityIconBox}>
-              <Ionicons
-                name="code-working"
-                size={24}
-                color={Theme.colors.primary}
-              />
-            </View>
-            <View style={styles.activityMeta}>
-              <Text
-                style={[
-                  styles.activityClassName,
-                  Theme.typography.bodyMd,
-                  styles.semibold,
-                ]}
-              >
-                CSC 401: Algorithms
-              </Text>
-              <Text style={[styles.activityDate, Theme.typography.caption]}>
-                Yesterday • 08:30 AM
-              </Text>
-            </View>
-            <View style={styles.presentBadge}>
-              <Text style={[styles.presentText, Theme.typography.labelMd]}>
-                PRESENT
-              </Text>
-            </View>
-          </View>
-
-          {/* Item 2 */}
-          <View style={styles.activityItem}>
-            <View style={styles.activityIconBox}>
-              <Ionicons name="server" size={24} color={Theme.colors.primary} />
-            </View>
-            <View style={styles.activityMeta}>
-              <Text
-                style={[
-                  styles.activityClassName,
-                  Theme.typography.bodyMd,
-                  styles.semibold,
-                ]}
-              >
-                CSC 411: DB Management
-              </Text>
-              <Text style={[styles.activityDate, Theme.typography.caption]}>
-                Oct 22 • 02:00 PM
-              </Text>
-            </View>
-            <View style={styles.presentBadge}>
-              <Text style={[styles.presentText, Theme.typography.labelMd]}>
-                PRESENT
-              </Text>
-            </View>
-          </View>
-
-          {/* Item 3 */}
-          <View style={styles.activityItem}>
-            <View style={styles.activityIconBox}>
-              <Ionicons
-                name="terminal"
-                size={24}
-                color={Theme.colors.primary}
-              />
-            </View>
-            <View style={styles.activityMeta}>
-              <Text
-                style={[
-                  styles.activityClassName,
-                  Theme.typography.bodyMd,
-                  styles.semibold,
-                ]}
-              >
-                CSC 421: OS Lab
-              </Text>
-              <Text style={[styles.activityDate, Theme.typography.caption]}>
-                Oct 21 • 11:00 AM
-              </Text>
-            </View>
-            <View style={styles.presentBadge}>
-              <Text style={[styles.presentText, Theme.typography.labelMd]}>
-                PRESENT
-              </Text>
-            </View>
-          </View>
-        </View>
-      </ScrollView>
-
-      {/* Navigation Tab Bar Mock */}
-      <View style={styles.navBar}>
-        <TouchableOpacity style={styles.navItemActive}>
-          <Ionicons
-            name="home"
-            size={24}
-            color={Theme.colors.onSecondaryContainer}
-          />
-          <Text style={[styles.navTextActive, Theme.typography.labelMd]}>
-            Home
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => router.replace("/(student)/history")}
-        >
-          <Ionicons
-            name="time-outline"
-            size={24}
-            color={Theme.colors.onSurfaceVariant}
-          />
-          <Text style={[styles.navText, Theme.typography.labelMd]}>
-            History
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => router.replace("/(student)/profile")}
-        >
-          <Ionicons
-            name="person-outline"
-            size={24}
-            color={Theme.colors.onSurfaceVariant}
-          />
-          <Text style={[styles.navText, Theme.typography.labelMd]}>
-            Profile
-          </Text>
-        </TouchableOpacity>
-      </View>
+      />
 
       {/* Verification Modal (Bottom Sheet Modal) */}
       <Modal
@@ -904,44 +636,6 @@ const styles = StyleSheet.create({
   presentText: {
     color: Theme.colors.secondary,
     fontWeight: "700",
-  },
-  navBar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 64,
-    backgroundColor: Theme.colors.surfaceContainerLowest,
-    borderTopWidth: 1,
-    borderTopColor: Theme.colors.outlineVariant,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingBottom: 10,
-    ...Theme.shadows.soft,
-  },
-  navItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: Theme.spacing.xs,
-    paddingHorizontal: Theme.spacing.lg,
-  },
-  navItemActive: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Theme.colors.secondaryContainer,
-    borderRadius: Theme.rounded.md,
-    paddingVertical: 6,
-    paddingHorizontal: Theme.spacing.md,
-  },
-  navText: {
-    color: Theme.colors.onSurfaceVariant,
-    marginTop: 2,
-  },
-  navTextActive: {
-    color: Theme.colors.onSecondaryContainer,
-    fontWeight: "600",
-    marginTop: 2,
   },
   modalOverlay: {
     flex: 1,

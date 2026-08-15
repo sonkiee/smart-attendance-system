@@ -1,0 +1,38 @@
+export const courses = [
+  {
+    name: "CSC 401: Algorithms and Data Structures",
+    code: "CSC 401",
+    date: "Yesterday",
+    time: "10:00 AM - 11:30 AM",
+    location: "Room 101",
+    instructor: "Dr. John Doe",
+    status: "Active",
+  },
+  {
+    name: "MAT 201: Linear Algebra",
+    code: "MAT 201",
+    date: "Today",
+    time: "1:00 PM - 2:30 PM",
+    location: "Room 202",
+    instructor: "Prof. Jane Smith",
+    status: "Active",
+  },
+  {
+    name: "PHY 301: Quantum Mechanics",
+    code: "PHY 301",
+    date: "Tomorrow",
+    time: "3:00 PM - 4:30 PM",
+    location: "Room 303",
+    instructor: "Dr. Albert Einstein",
+    status: "Inactive",
+  },
+  {
+    name: "ENG 101: English Literature",
+    code: "ENG 101",
+    date: "Next Week",
+    time: "9:00 AM - 10:30 AM",
+    location: "Room 404",
+    instructor: "Prof. William Shakespeare",
+    status: "Inactive",
+  },
+];

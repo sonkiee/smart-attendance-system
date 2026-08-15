@@ -1,3 +1,5 @@
+import Header from "@/components/header";
+import { Theme } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -11,12 +13,13 @@ import {
   View,
 } from "react-native";
 import Svg, { Circle } from "react-native-svg";
-import { Theme } from "../../constants/theme";
 
 export default function StudentProfile() {
   const router = useRouter();
 
-  const handleNav = (path: "/(student)/(tabs)/dashboard" | "/(student)/history") => {
+  const handleNav = (
+    path: "/(student)/(tabs)/dashboard" | "/(student)/history",
+  ) => {
     router.replace(path);
   };
 
@@ -40,29 +43,7 @@ export default function StudentProfile() {
       />
 
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.profileSection}>
-          <View style={styles.headerAvatarContainer}>
-            <Image
-              style={styles.avatar}
-              source={{
-                uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuCmt3dia3CZ-tY8qjF-fT_I1GPiCy78ooaSVQd3ZR9C65NUwf38Xuaxv0fs1kgAPB3g-0aAb1eGNbtXxldIVYV4f5mt0Q6hEtH57SrUBwkO-isYXyxLrOhx3y72d8n9hyXIlul7uUOV1uprtM7OK5LWsORTJ_PkarwmSWLajEFzSV5fVTWy8YFVb_JA1Sifl8XBusRRcQLAp5T2tktho_hlPfKzSLUKMttcO1SC-5E-Z0o2ym7X1_Y",
-              }}
-              contentFit="cover"
-            />
-          </View>
-          <Text style={[styles.title, Theme.typography.headlineMd]}>
-            Profile
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.notificationBtn} activeOpacity={0.7}>
-          <Ionicons
-            name="notifications-outline"
-            size={24}
-            color={Theme.colors.primary}
-          />
-        </TouchableOpacity>
-      </View>
+      <Header title="Profile" />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -320,44 +301,6 @@ export default function StudentProfile() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-
-      {/* Navigation Tab Bar Mock */}
-      <View style={styles.navBar}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => handleNav("/(student)/(tabs)/dashboard")}
-        >
-          <Ionicons
-            name="home-outline"
-            size={24}
-            color={Theme.colors.onSurfaceVariant}
-          />
-          <Text style={[styles.navText, Theme.typography.labelMd]}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => handleNav("/(student)/history")}
-        >
-          <Ionicons
-            name="time-outline"
-            size={24}
-            color={Theme.colors.onSurfaceVariant}
-          />
-          <Text style={[styles.navText, Theme.typography.labelMd]}>
-            History
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItemActive}>
-          <Ionicons
-            name="person"
-            size={24}
-            color={Theme.colors.onSecondaryContainer}
-          />
-          <Text style={[styles.navTextActive, Theme.typography.labelMd]}>
-            Profile
-          </Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
@@ -576,43 +519,5 @@ const styles = StyleSheet.create({
   },
   semibold: {
     fontWeight: "600",
-  },
-  navBar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 64,
-    backgroundColor: Theme.colors.surfaceContainerLowest,
-    borderTopWidth: 1,
-    borderTopColor: Theme.colors.outlineVariant,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingBottom: 10,
-    ...Theme.shadows.soft,
-  },
-  navItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: Theme.spacing.xs,
-    paddingHorizontal: Theme.spacing.lg,
-  },
-  navItemActive: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Theme.colors.secondaryContainer,
-    borderRadius: Theme.rounded.md,
-    paddingVertical: 6,
-    paddingHorizontal: Theme.spacing.md,
-  },
-  navText: {
-    color: Theme.colors.onSurfaceVariant,
-    marginTop: 2,
-  },
-  navTextActive: {
-    color: Theme.colors.onSecondaryContainer,
-    fontWeight: "600",
-    marginTop: 2,
   },
 });
