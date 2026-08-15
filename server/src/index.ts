@@ -15,21 +15,21 @@ app.get("/", (req: Request, res: Response) => {
 
 (async () => {
   try {
-    console.info("Checking DB connection...");
+    logger.info("Checking DB connection...");
 
     const client = await (await import("./db")).pool.connect();
     await client.query("SELECT 1"); // Test the database connection
     client.release();
-    console.info("Postgres connected");
+    logger.info("Postgres connected");
 
-    console.info("Starting server...");
+    logger.info("Starting server...");
     app.listen(PORT, () => {
-      console.log(
+      logger.info(
         `Server is running on http://localhost:${PORT} in ${NODE_ENV} mode`,
       );
     });
   } catch (error) {
-    console.error("Error starting server");
+    logger.error("Error starting server");
     process.exit(1);
   }
 })();
