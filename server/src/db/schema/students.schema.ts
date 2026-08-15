@@ -1,5 +1,6 @@
 import { integer, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import { users } from "./users.schema.js";
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 export const students = pgTable("students", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -12,3 +13,6 @@ export const students = pgTable("students", {
   department: varchar("department", { length: 100 }).notNull(),
   level: integer("level").notNull(),
 });
+
+export type Student = InferSelectModel<typeof students>;
+export type NewStudent = InferInsertModel<typeof students>;

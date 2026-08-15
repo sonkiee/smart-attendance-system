@@ -1,5 +1,6 @@
 import { pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import { users } from "./users.schema.js";
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 export const lecturers = pgTable("lecturers", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -11,3 +12,6 @@ export const lecturers = pgTable("lecturers", {
   lastName: varchar("last_name", { length: 100 }).notNull(),
   department: varchar("department", { length: 100 }).notNull(),
 });
+
+export type Lecturer = InferSelectModel<typeof lecturers>;
+export type NewLecturer = InferInsertModel<typeof lecturers>;

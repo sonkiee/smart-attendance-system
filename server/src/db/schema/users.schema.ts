@@ -26,6 +26,10 @@ export const users = pgTable("users", {
 
   isActive: boolean("is_active").notNull().default(true),
 
+  isActivated: boolean("is_activated").notNull().default(false),
+
+  deviceId: varchar("device_id", { length: 255 }),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

@@ -26,4 +26,5 @@ export const attendanceStatusEnum = pgEnum("attendance_status", [
   "present",
   "absent",
   "late",
+  "unverified",
 ]);
