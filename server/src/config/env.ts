@@ -5,6 +5,7 @@ interface EnvConfig {
   PORT: number;
   DATABASE_URL: string;
   JWT_SECRET: string;
+  LOG_LEVEL?: string;
 }
 
 const requiredEnvVars: (keyof EnvConfig)[] = ["DATABASE_URL"];
@@ -18,7 +19,7 @@ const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
 
 if (missingVars.length > 0) {
   throw new Error(
-    `❌ Missing required environment variables: ${missingVars.join(", ")}`
+    `❌ Missing required environment variables: ${missingVars.join(", ")}`,
   );
 }
 
