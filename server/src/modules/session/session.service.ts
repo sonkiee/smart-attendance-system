@@ -1,5 +1,12 @@
 import { db } from "@/db";
-import { attendanceSessions, attendanceRecords, courseEnrollments, NewAttendanceSession, venues } from "@/db/schema";
+import {
+  attendanceSessions,
+  attendanceRecords,
+  courseEnrollments,
+  NewAttendanceSession,
+  venues,
+  courses,
+} from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
 const create = async (data: NewAttendanceSession) => {
@@ -11,13 +18,51 @@ const create = async (data: NewAttendanceSession) => {
 };
 
 const getAll = async () => {
-  return await db.select().from(attendanceSessions);
+  return await db
+    .select({
+      id: attendanceSessions.id,
+      courseId: attendanceSessions.courseId,
+      courseCode: courses.courseCode,
+      courseTitle: courses.courseTitle,
+      lecturerId: attendanceSessions.lecturerId,
+      venueId: attendanceSessions.venueId,
+      sessionDate: attendanceSessions.sessionDate,
+      startTime: attendanceSessions.startTime,
+      endTime: attendanceSessions.endTime,
+      attendanceCode: attendanceSessions.attendanceCode,
+      status: attendanceSessions.status,
+      allowRepMarking: attendanceSessions.allowRepMarking,
+      lateThresholdMinutes: attendanceSessions.lateThresholdMinutes,
+      createdAt: attendanceSessions.createdAt,
+      venueName: venues.name,
+    })
+    .from(attendanceSessions)
+    .innerJoin(courses, eq(attendanceSessions.courseId, courses.id))
+    .leftJoin(venues, eq(attendanceSessions.venueId, venues.id));
 };
 
 const getById = async (id: string) => {
   const [session] = await db
-    .select()
+    .select({
+      id: attendanceSessions.id,
+      courseId: attendanceSessions.courseId,
+      courseCode: courses.courseCode,
+      courseTitle: courses.courseTitle,
+      lecturerId: attendanceSessions.lecturerId,
+      venueId: attendanceSessions.venueId,
+      sessionDate: attendanceSessions.sessionDate,
+      startTime: attendanceSessions.startTime,
+      endTime: attendanceSessions.endTime,
+      attendanceCode: attendanceSessions.attendanceCode,
+      status: attendanceSessions.status,
+      allowRepMarking: attendanceSessions.allowRepMarking,
+      lateThresholdMinutes: attendanceSessions.lateThresholdMinutes,
+      createdAt: attendanceSessions.createdAt,
+      venueName: venues.name,
+    })
     .from(attendanceSessions)
+    .innerJoin(courses, eq(attendanceSessions.courseId, courses.id))
+    .leftJoin(venues, eq(attendanceSessions.venueId, venues.id))
     .where(eq(attendanceSessions.id, id))
     .limit(1);
   return session || null;
@@ -29,6 +74,8 @@ const getActiveSessionsForStudent = async (studentId: string) => {
     .select({
       id: attendanceSessions.id,
       courseId: attendanceSessions.courseId,
+      courseCode: courses.courseCode,
+      courseTitle: courses.courseTitle,
       lecturerId: attendanceSessions.lecturerId,
       venueId: attendanceSessions.venueId,
       sessionDate: attendanceSessions.sessionDate,
@@ -44,14 +91,18 @@ const getActiveSessionsForStudent = async (studentId: string) => {
       courseEnrollments,
       and(
         eq(attendanceSessions.courseId, courseEnrollments.courseId),
-        eq(courseEnrollments.studentId, studentId)
-      )
+        eq(courseEnrollments.studentId, studentId),
+      ),
     )
+    .innerJoin(courses, eq(attendanceSessions.courseId, courses.id))
     .leftJoin(venues, eq(attendanceSessions.venueId, venues.id))
     .where(eq(attendanceSessions.status, "active"));
 };
 
-const updateStatus = async (id: string, status: "active" | "completed" | "cancelled") => {
+const updateStatus = async (
+  id: string,
+  status: "active" | "completed" | "cancelled",
+) => {
   return await db.transaction(async (tx) => {
     // 1. Update the session status
     const [updatedSession] = await tx
@@ -79,7 +130,9 @@ const updateStatus = async (id: string, status: "active" | "completed" | "cancel
       const markedSet = new Set(marked.map((m) => m.studentId));
 
       // Identify absent students
-      const absentStudents = enrolled.filter((e) => !markedSet.has(e.studentId));
+      const absentStudents = enrolled.filter(
+        (e) => !markedSet.has(e.studentId),
+      );
 
       if (absentStudents.length > 0) {
         const absentRecords = absentStudents.map((s) => ({
@@ -93,7 +146,10 @@ const updateStatus = async (id: string, status: "active" | "completed" | "cancel
           markedAt: new Date(),
         }));
 
-        await tx.insert(attendanceRecords).values(absentRecords).onConflictDoNothing();
+        await tx
+          .insert(attendanceRecords)
+          .values(absentRecords)
+          .onConflictDoNothing();
       }
     }
 
@@ -110,4 +166,11 @@ const update = async (id: string, data: Partial<NewAttendanceSession>) => {
   return updated || null;
 };
 
-export { create, getAll, getById, getActiveSessionsForStudent, updateStatus, update };
+export {
+  create,
+  getAll,
+  getById,
+  getActiveSessionsForStudent,
+  updateStatus,
+  update,
+};

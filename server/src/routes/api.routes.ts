@@ -6,6 +6,7 @@ import lecturerRoutes from "@/modules/lecturer/lecturer.routes";
 import venueRoutes from "@/modules/venue/venue.routes";
 import sessionRoutes from "@/modules/session/session.routes";
 import attendanceRoutes from "@/modules/attendance/attendance.routes";
+import studentRoutes from "@/modules/student/student.routes";
 import { authLimiter } from "@/config/limiter.js";
 
 const router = express.Router();
@@ -13,6 +14,7 @@ const router = express.Router();
 router.use("/auth", authLimiter);
 router.use("/auth", userAuth);
 router.use("/auth", roleAuth);
+router.use("/students", studentRoutes);
 router.use("/courses", courseRoutes);
 router.use("/lecturers", lecturerRoutes);
 router.use("/venues", venueRoutes);

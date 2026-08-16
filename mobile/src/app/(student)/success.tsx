@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo } from "react";
 import {
+  ActivityIndicator,
   Animated,
   SafeAreaView,
   StatusBar,
@@ -11,9 +12,12 @@ import {
   View,
 } from "react-native";
 import { Theme } from "../../constants/theme";
+import { useSessionById } from "@/hooks/queries/user";
 
 export default function AttendanceSuccess() {
   const router = useRouter();
+  const sessionId = useLocalSearchParams().id;
+  const { data, isPending } = useSessionById(sessionId as string);
 
   // Animations
   const scaleAnim = useMemo(() => new Animated.Value(0), []);
@@ -66,6 +70,33 @@ export default function AttendanceSuccess() {
     // Navigate back to the student dashboard
     router.replace("/(student)/(tabs)/dashboard");
   };
+
+  const formattedTime = useMemo(() => {
+    if (data?.startTime) {
+      return data.startTime.substring(0, 5);
+    }
+    return "17:38";
+  }, [data?.startTime]);
+
+  const formattedDate = useMemo(() => {
+    if (data?.sessionDate) {
+      try {
+        const date = new Date(data.sessionDate);
+        return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      } catch {
+        return data.sessionDate;
+      }
+    }
+    return "Aug 16";
+  }, [data?.sessionDate]);
+
+  if (isPending && sessionId) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: Theme.colors.background }}>
+        <ActivityIndicator size="large" color={Theme.colors.primary} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -124,7 +155,7 @@ export default function AttendanceSuccess() {
               Attendance Marked!
             </Text>
             <Text style={[styles.classText, Theme.typography.headlineMd]}>
-              CSC 423: Compiler Construction I
+              {data ? `${data.courseCode}: ${data.courseTitle}` : "CSC 401: Mobile App Development"}
             </Text>
           </Animated.View>
 
@@ -152,7 +183,7 @@ export default function AttendanceSuccess() {
                   TIMESTAMP
                 </Text>
                 <Text style={[styles.cardValue, Theme.typography.bodyLg]}>
-                  Today, 10:04 AM
+                  {formattedDate}, {formattedTime}
                 </Text>
               </View>
             </View>
@@ -171,7 +202,7 @@ export default function AttendanceSuccess() {
                   VENUE
                 </Text>
                 <Text style={[styles.cardValue, Theme.typography.bodyLg]}>
-                  Hall A2
+                  {data?.venueName || "Computer Science Lab"}
                 </Text>
               </View>
             </View>

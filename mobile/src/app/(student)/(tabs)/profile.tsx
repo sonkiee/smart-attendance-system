@@ -14,8 +14,11 @@ import {
 } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 
+import { useProfile } from "@/hooks/queries/user";
+
 export default function StudentProfile() {
   const router = useRouter();
+  const { data: profile } = useProfile();
 
   const handleNav = (
     path: "/(student)/(tabs)/dashboard" | "/(student)/history",
@@ -71,10 +74,10 @@ export default function StudentProfile() {
           </View>
 
           <Text style={[styles.profileName, Theme.typography.headlineLg]}>
-            Kennedy
+            {profile?.student ? `${profile.student.firstName} ${profile.student.lastName}` : "Jane Smith"}
           </Text>
           <Text style={[styles.profileId, Theme.typography.bodyMd]}>
-            ID: STU-8829104
+            {(profile?.student?.matricNumber || "csc/2020/001").toUpperCase()}
           </Text>
 
           <View style={styles.heroGrid}>
@@ -89,7 +92,7 @@ export default function StudentProfile() {
                   { color: Theme.colors.primary },
                 ]}
               >
-                Senior
+                {profile?.student?.level || 400}L
               </Text>
             </View>
             <View style={styles.gridCard}>
@@ -191,8 +194,8 @@ export default function StudentProfile() {
             />
           </TouchableOpacity>
 
-          {/* Item 2 */}
-          <TouchableOpacity style={styles.settingsItem} activeOpacity={0.7}>
+          {/* Item 2 (Commented Out) */}
+          {/* <TouchableOpacity style={styles.settingsItem} activeOpacity={0.7}>
             <View style={styles.settingsItemLeft}>
               <View style={styles.itemIconBox}>
                 <Ionicons
@@ -221,7 +224,7 @@ export default function StudentProfile() {
               size={20}
               color={Theme.colors.outline}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Settings Group: Preferences */}
@@ -231,7 +234,11 @@ export default function StudentProfile() {
           </Text>
 
           {/* Item 3 */}
-          <TouchableOpacity style={styles.settingsItem} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.settingsItem}
+            activeOpacity={0.7}
+            onPress={() => router.push("/(student)/settings")}
+          >
             <View style={styles.settingsItemLeft}>
               <View style={styles.itemIconBox}>
                 <Ionicons

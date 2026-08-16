@@ -7,6 +7,13 @@ import * as lecturerService from "../lecturer/lecturer.service";
 
 const signin = async (req: Request, res: Response) => {
   const { matricNumber, password } = req.body;
+  console.log("Matric Number:", matricNumber);
+  if (!matricNumber || !password) {
+    return res
+      .status(400)
+      .json({ message: "Matric number and password are required" });
+  }
+
   const result = await studentService.findByMatric(matricNumber);
 
   if (!result) {
@@ -18,9 +25,9 @@ const signin = async (req: Request, res: Response) => {
   const { student, user } = result;
 
   if (!user.isActivated) {
-    return res
-      .status(403)
-      .json({ message: "Account not activated. Please activate your account first." });
+    return res.status(403).json({
+      message: "Account not activated. Please activate your account first.",
+    });
   }
 
   const isPasswordValid = bcrypt.compareSync(password, user.passwordHash);
@@ -72,9 +79,7 @@ const activate = async (req: Request, res: Response) => {
   });
 
   if (!updatedUser) {
-    return res
-      .status(500)
-      .json({ message: "Failed to activate account" });
+    return res.status(500).json({ message: "Failed to activate account" });
   }
 
   // Sign token for immediate login

@@ -1,5 +1,5 @@
 import { Theme } from "@/constants/theme";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
@@ -44,8 +44,8 @@ export default function TabsLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "home" : "home-outline"}
+            <MaterialCommunityIcons
+              name={focused ? "home-variant" : "home-variant-outline"}
               size={24}
               color={color}
             />
@@ -57,11 +57,7 @@ export default function TabsLayout() {
         options={{
           title: "History",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "time" : "time-outline"}
-              size={24}
-              color={color}
-            />
+            <MaterialCommunityIcons name="history" size={24} color={color} />
           ),
         }}
       />
@@ -70,8 +66,8 @@ export default function TabsLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "person" : "person-outline"}
+            <MaterialCommunityIcons
+              name={focused ? "account-school" : "account-school-outline"}
               size={24}
               color={color}
             />

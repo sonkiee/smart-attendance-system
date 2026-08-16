@@ -1,10 +1,11 @@
 import Header from "@/components/header";
+import { AttendanceItem } from "@/components/attendance-item";
 import { Theme } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
   SafeAreaView,
-  ScrollView,
+  SectionList,
   StatusBar,
   StyleSheet,
   Text,
@@ -74,6 +75,19 @@ export default function StudentHistory() {
     },
   ];
 
+  const sections = [
+    {
+      title: "October 2024",
+      count: 12,
+      data: octoberRecords,
+    },
+    {
+      title: "September 2024",
+      count: 24,
+      data: septemberRecords,
+    },
+  ];
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar
@@ -84,142 +98,69 @@ export default function StudentHistory() {
       {/* Header */}
       <Header title="History" />
 
-      <ScrollView
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <AttendanceItem
+            course={item.course}
+            date={item.date}
+            status={item.status}
+            iconName={item.iconName}
+            variant="history"
+          />
+        )}
+        renderSectionHeader={({ section }) => (
+          <View style={styles.groupHeader}>
+            <Text style={[styles.groupTitle, Theme.typography.headlineMd]}>
+              {section.title}
+            </Text>
+            <Text style={[styles.groupSubtitle, Theme.typography.labelMd]}>
+              {section.count} records
+            </Text>
+          </View>
+        )}
+        ListHeaderComponent={
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Text style={[styles.statLabel, Theme.typography.labelMd]}>
+                TOTAL DAYS
+              </Text>
+              <Text style={[styles.statValue, Theme.typography.headlineLg]}>
+                22
+              </Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={[styles.statLabel, Theme.typography.labelMd]}>
+                ATTENDANCE
+              </Text>
+              <Text
+                style={[
+                  styles.statValue,
+                  Theme.typography.headlineLg,
+                  { color: Theme.colors.secondary },
+                ]}
+              >
+                98%
+              </Text>
+            </View>
+          </View>
+        }
+        ListFooterComponent={
+          <TouchableOpacity style={styles.loadOlderBtn} activeOpacity={0.7}>
+            <Ionicons
+              name="filter"
+              size={20}
+              color={Theme.colors.onSurfaceVariant}
+            />
+            <Text style={[styles.loadOlderText, Theme.typography.labelMd]}>
+              LOAD OLDER RECORDS
+            </Text>
+          </TouchableOpacity>
+        }
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-      >
-        {/* Summary Stats Row */}
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={[styles.statLabel, Theme.typography.labelMd]}>
-              TOTAL DAYS
-            </Text>
-            <Text style={[styles.statValue, Theme.typography.headlineLg]}>
-              22
-            </Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={[styles.statLabel, Theme.typography.labelMd]}>
-              ATTENDANCE
-            </Text>
-            <Text
-              style={[
-                styles.statValue,
-                Theme.typography.headlineLg,
-                { color: Theme.colors.secondary },
-              ]}
-            >
-              98%
-            </Text>
-          </View>
-        </View>
-
-        {/* History Group: October 2024 */}
-        <View style={styles.historyGroup}>
-          <View style={styles.groupHeader}>
-            <Text style={[styles.groupTitle, Theme.typography.headlineMd]}>
-              October 2024
-            </Text>
-            <Text style={[styles.groupSubtitle, Theme.typography.labelMd]}>
-              12 records
-            </Text>
-          </View>
-
-          <View style={styles.recordsList}>
-            {octoberRecords.map((item) => (
-              <View key={item.id} style={styles.recordCard}>
-                <View style={styles.recordLeft}>
-                  <View style={styles.iconBox}>
-                    <Ionicons
-                      name={item.iconName}
-                      size={24}
-                      color={Theme.colors.primary}
-                    />
-                  </View>
-                  <View>
-                    <Text
-                      style={[
-                        styles.courseCode,
-                        Theme.typography.bodyLg,
-                        styles.bold,
-                      ]}
-                    >
-                      {item.course}
-                    </Text>
-                    <Text style={[styles.recordDate, Theme.typography.caption]}>
-                      {item.date}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.presentBadge}>
-                  <Text style={[styles.presentText, Theme.typography.labelMd]}>
-                    {item.status.toUpperCase()}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* History Group: September 2024 */}
-        <View style={styles.historyGroup}>
-          <View style={styles.groupHeader}>
-            <Text style={[styles.groupTitle, Theme.typography.headlineMd]}>
-              September 2024
-            </Text>
-            <Text style={[styles.groupSubtitle, Theme.typography.labelMd]}>
-              24 records
-            </Text>
-          </View>
-
-          <View style={styles.recordsList}>
-            {septemberRecords.map((item) => (
-              <View key={item.id} style={styles.recordCard}>
-                <View style={styles.recordLeft}>
-                  <View style={styles.iconBox}>
-                    <Ionicons
-                      name={item.iconName}
-                      size={24}
-                      color={Theme.colors.primary}
-                    />
-                  </View>
-                  <View>
-                    <Text
-                      style={[
-                        styles.courseCode,
-                        Theme.typography.bodyLg,
-                        styles.bold,
-                      ]}
-                    >
-                      {item.course}
-                    </Text>
-                    <Text style={[styles.recordDate, Theme.typography.caption]}>
-                      {item.date}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.presentBadge}>
-                  <Text style={[styles.presentText, Theme.typography.labelMd]}>
-                    {item.status.toUpperCase()}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Load Older Records Button */}
-        <TouchableOpacity style={styles.loadOlderBtn} activeOpacity={0.7}>
-          <Ionicons
-            name="filter"
-            size={20}
-            color={Theme.colors.onSurfaceVariant}
-          />
-          <Text style={[styles.loadOlderText, Theme.typography.labelMd]}>
-            LOAD OLDER RECORDS
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+      />
     </SafeAreaView>
   );
 }
@@ -292,13 +233,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginTop: Theme.spacing.base,
   },
-  historyGroup: {
-    marginBottom: Theme.spacing.lg,
-  },
   groupHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: Theme.spacing.md,
     marginBottom: Theme.spacing.sm,
   },
   groupTitle: {
@@ -307,52 +246,6 @@ const styles = StyleSheet.create({
   },
   groupSubtitle: {
     color: Theme.colors.outline,
-  },
-  recordsList: {
-    gap: Theme.spacing.xs,
-  },
-  recordCard: {
-    flexDirection: "row",
-    backgroundColor: Theme.colors.surfaceContainerLowest,
-    borderColor: Theme.colors.outlineVariant,
-    borderWidth: 1,
-    borderRadius: Theme.rounded.md,
-    padding: Theme.spacing.md,
-    alignItems: "center",
-    justifyContent: "space-between",
-    ...Theme.shadows.soft,
-  },
-  recordLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Theme.spacing.md,
-  },
-  iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: Theme.rounded.default,
-    backgroundColor: Theme.colors.primaryContainer + "10",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  courseCode: {
-    color: Theme.colors.onSurface,
-  },
-  recordDate: {
-    color: Theme.colors.onSurfaceVariant,
-    marginTop: 2,
-  },
-  presentBadge: {
-    backgroundColor: Theme.colors.secondary + "10",
-    borderColor: Theme.colors.secondary + "20",
-    borderWidth: 1,
-    paddingHorizontal: Theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: Theme.rounded.full,
-  },
-  presentText: {
-    color: Theme.colors.secondary,
-    fontWeight: "600",
   },
   loadOlderBtn: {
     flexDirection: "row",

@@ -25,4 +25,9 @@ router.route("/:id/toggle-rep-marking")
   .post(shield, controller.toggleRepMarking)
   .all(methodNotAllowed);
 
+// Get session by ID
+router.route("/:id")
+  .get(shield, controller.getById)
+  .all(methodNotAllowed);
+
 export default router;

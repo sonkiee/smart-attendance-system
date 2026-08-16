@@ -62,7 +62,7 @@ const getActiveForStudent = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Student profile not found for user" });
     }
 
-    const sessions = await service.getActiveSessionsForStudent(student.id);
+    const sessions = await service.getActiveSessionsForStudent(student.student.id);
     return res.status(200).json(sessions);
   } catch (error: any) {
     return res.status(500).json({ message: "Failed to fetch active sessions", error: error.message });
@@ -125,4 +125,17 @@ const toggleRepMarking = async (req: Request, res: Response) => {
   }
 };
 
-export { create, getActiveForStudent, closeSession, toggleRepMarking };
+const getById = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const session = await service.getById(id);
+    if (!session) {
+      return res.status(404).json({ message: "Session not found" });
+    }
+    return res.status(200).json(session);
+  } catch (error: any) {
+    return res.status(500).json({ message: "Failed to fetch session details", error: error.message });
+  }
+};
+
+export { create, getActiveForStudent, closeSession, toggleRepMarking, getById };

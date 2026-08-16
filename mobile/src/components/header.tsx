@@ -1,4 +1,5 @@
 import { Theme } from "@/constants/theme";
+import { useProfile } from "@/hooks/queries/user";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { usePathname } from "expo-router";
@@ -7,8 +8,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 export default function Header({ title }: { title: string }) {
   const pathname = usePathname();
   const isHome = pathname === "/home";
-
-  console.log(pathname);
+  const { data: profile, isLoading } = useProfile();
 
   return (
     <View style={styles.header}>
@@ -28,11 +28,14 @@ export default function Header({ title }: { title: string }) {
         <View>
           <Text style={[styles.greeting, Theme.typography.headlineMd]}>
             {title}
-            {isHome && "Kennedy"}
+            {isHome && ` ${profile?.student?.firstName || "Jane"}`}
           </Text>
           {isHome && (
             <Text style={[styles.degreeText, Theme.typography.labelMd]}>
-              CSC 423 • Computer Science
+              {(
+                profile?.student?.matricNumber || "KASU/22/CSC/1207"
+              ).toUpperCase()}{" "}
+              • Computer Science
             </Text>
           )}
         </View>

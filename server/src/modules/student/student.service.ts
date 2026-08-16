@@ -17,12 +17,17 @@ const findByMatric = async (matricNumber: string) => {
 };
 
 const findByUserId = async (userId: string) => {
-  const [student] = await db
-    .select()
+  const result = await db
+    .select({
+      student: students,
+      user: users,
+    })
     .from(students)
+    .innerJoin(users, eq(students.userId, users.id))
     .where(eq(students.userId, userId))
     .limit(1);
-  return student || null;
+
+  return result[0] || null;
 };
 
 export { findByMatric, findByUserId };

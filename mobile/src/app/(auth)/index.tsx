@@ -1,12 +1,11 @@
+import { useSignin } from "@/hooks/mutation/use-auth";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
-  Animated,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -15,9 +14,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Theme } from "../../constants/theme";
 
 export default function LoginScreen() {
+  const { mutate, isPending } = useSignin();
   const router = useRouter();
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -25,49 +26,16 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Animations
-  const fadeAnim = useMemo(() => new Animated.Value(0), []);
-  const translateAnim = useMemo(() => new Animated.Value(30), []);
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [fadeAnim, translateAnim]);
-
   const handleSubmit = () => {
-    // if (!id || !password) return;
+    if (!id || !password) return;
+    const data = { id, password };
 
-    setLoading(true);
+    console.log(id);
 
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess(true);
-
-      setTimeout(() => {
-        router.push("/(student)/(tabs)/dashboard");
-      }, 800);
-    }, 1500);
-  };
-
-  const handleBiometricLogin = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess(true);
-      setTimeout(() => {
-        router.push("/role-select");
-      }, 800);
-    }, 1200);
+    mutate(data, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
   };
 
   return (
@@ -92,15 +60,7 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Animated.View
-            style={[
-              styles.container,
-              {
-                opacity: fadeAnim,
-                transform: [{ translateY: translateAnim }],
-              },
-            ]}
-          >
+          <View style={styles.container}>
             {/* Brand Header */}
             <View style={styles.header}>
               <View style={[styles.logoIconBox, Theme.shadows.soft]}>
@@ -108,6 +68,7 @@ export default function LoginScreen() {
                   name="location"
                   size={36}
                   color={Theme.colors.onPrimary}
+                  onPress={() => router.push("/(auth)/set-password")}
                 />
               </View>
               <Text style={[styles.title, Theme.typography.headlineLg]}>
@@ -257,10 +218,10 @@ export default function LoginScreen() {
 
             {/* Footer */}
             <View style={styles.footer}>
-              <Text style={[styles.registerPrompt, Theme.typography.bodyMd]}>
+              {/* <Text style={[styles.registerPrompt, Theme.typography.bodyMd]}>
                 Don{"'"}t have an account yet?{" "}
                 <Text style={styles.registerLink}>Register Account</Text>
-              </Text>
+              </Text> */}
 
               <View style={styles.footerRow}>
                 <View style={styles.statusContainer}>
@@ -281,7 +242,7 @@ export default function LoginScreen() {
                 </View>
               </View>
             </View>
-          </Animated.View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

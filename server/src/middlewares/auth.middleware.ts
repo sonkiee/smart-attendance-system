@@ -29,7 +29,7 @@ export const shield = async (
       email: string;
       role: string;
     };
-    const user = await db
+    const [user] = await db
       .select()
       .from(users)
       .where(eq(users.id, decoded.id))
@@ -39,7 +39,7 @@ export const shield = async (
       return response.status(401).json({ message: "User not found" });
     }
 
-    request.user = user[0];
+    request.user = user;
     return next();
   } catch (error) {
     return response.status(401).json({ message: "Invalid token" });

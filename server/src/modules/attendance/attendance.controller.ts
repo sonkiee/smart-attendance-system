@@ -27,7 +27,7 @@ const markSelf = async (req: Request, res: Response) => {
 
     const record = await service.markSelf({
       sessionId,
-      studentId: student.id,
+      studentId: student.student.id,
       latitude: latitude !== undefined ? Number(latitude) : undefined,
       longitude: longitude !== undefined ? Number(longitude) : undefined,
       bleVerified: !!bleVerified,
@@ -84,7 +84,7 @@ const markManual = async (req: Request, res: Response) => {
         .where(
           and(
             eq(courseReps.courseId, session.courseId),
-            eq(courseReps.studentId, repStudent.id)
+            eq(courseReps.studentId, repStudent.student.id)
           )
         )
         .limit(1);
@@ -124,7 +124,7 @@ const getHistory = async (req: Request, res: Response) => {
       if (!student) {
         return res.status(403).json({ message: "Student profile not found" });
       }
-      const history = await service.getHistoryForStudent(student.id);
+      const history = await service.getHistoryForStudent(student.student.id);
       return res.status(200).json(history);
     } else if (user.role === "lecturer") {
       const lecturer = await lecturerService.findByUserId(user.id);

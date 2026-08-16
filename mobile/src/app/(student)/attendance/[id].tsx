@@ -1,29 +1,31 @@
-import { AttendanceItem } from "@/components/attendance-item";
-import Header from "@/components/header";
-import { Sessions } from "@/components/sessions";
-import { courses } from "@/constants";
+import { SessionCard } from "@/components/session-card";
 import { Theme } from "@/constants/theme";
+import { useClockIn } from "@/hooks/mutation/use-auth";
+import { useSessionById } from "@/hooks/queries/user";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Image } from "expo-image";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
   Easing,
-  FlatList,
   Modal,
-  SafeAreaView,
-  StatusBar,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function StudentDashboard() {
+export default function AttendanceScreen() {
   const router = useRouter();
-
-  // if (isLoading) return <ActivityIndicator />;
+  const sessionId = useLocalSearchParams().id;
+  console.log("sessionId", sessionId);
+  const { data, isPending } = useSessionById(sessionId as string);
+  const { mutate, isPending: isSubmitting } = useClockIn();
+  console.log("session data", data);
   const [modalVisible, setModalVisible] = useState(false);
   const [verificationState, setVerificationState] = useState<
     "verifying" | "verified" | "success"
@@ -161,42 +163,123 @@ export default function StudentDashboard() {
       // Transition to success screen after showing check success badge
       setTimeout(() => {
         setModalVisible(false);
-        router.push("/(student)/success");
+        router.push({
+          pathname: "/(student)/success",
+          params: { id: sessionId },
+        });
       }, 1000);
     }, 1500);
   };
 
-  const handleBackToSelect = () => {
-    router.replace("/");
-  };
+  if (isPending) {
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: Theme.colors.background,
+        }}
+      >
+        <ActivityIndicator size="large" color={Theme.colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  const formattedTime =
+    data?.startTime && data?.endTime
+      ? `${data.startTime.substring(0, 5)} - ${data.endTime.substring(0, 5)}`
+      : "17:38 - 20:38";
+
+  const formattedDate = data?.sessionDate
+    ? new Date(data.sessionDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })
+    : "Aug 16";
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={Theme.colors.background}
-      />
+    <SafeAreaView edges={["bottom"]} style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        {/* Proximity / Location Info */}
+        <View style={styles.statusRow}>
+          <View style={styles.geofenceBadge}>
+            <Animated.View
+              style={[
+                styles.geofenceDot,
+                { transform: [{ scale: mapPulseAnim }] },
+              ]}
+            />
+            <Text style={[styles.geofenceText, Theme.typography.labelMd]}>
+              Inside Geofence 🟢
+            </Text>
+          </View>
+          <View style={styles.dateTimeContainer}>
+            <Text style={[styles.dateText, Theme.typography.caption]}>
+              Today, {formattedDate}
+            </Text>
+            <Text
+              style={[
+                styles.timeText,
+                Theme.typography.bodyMd,
+                styles.semibold,
+              ]}
+            >
+              09:42 AM
+            </Text>
+          </View>
+        </View>
 
-      {/* Header */}
-      <Header title="Hello," />
-
-      <FlatList
-        data={courses}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => <AttendanceItem item={item} />}
-        ListHeaderComponent={
-          <>
-            <Sessions />
-            <View style={styles.recentActivityHeader}>
-              <Text>Recent Activity</Text>
-              <TouchableOpacity>
-                <Text>View All</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        }
-        contentContainerStyle={styles.scrollContent}
-      />
+        {/* Active Class Card */}
+        <SessionCard
+          title={`${data?.courseCode || "CSC 401"}: ${data?.courseTitle || "Mobile App Development"}`}
+          location={data?.venueName || "Computer Science Lab"}
+          time={formattedTime}
+          interactive={false}
+          rightAction="ellipsis"
+        />
+        {/* Large Mark Attendance Button */}
+        <TouchableOpacity
+          style={[styles.ctaButton, Theme.shadows.attendanceButton]}
+          activeOpacity={0.8}
+          onPress={handleMarkAttendancePress}
+        >
+          <Ionicons
+            name="finger-print"
+            size={24}
+            color={Theme.colors.onPrimary}
+          />
+          <Text style={[styles.ctaText, Theme.typography.headlineMd]}>
+            MARK ATTENDANCE
+          </Text>
+        </TouchableOpacity>
+        {/* Map Preview Card */}
+        <View style={styles.mapCard}>
+          <Image
+            style={styles.mapBackground}
+            source={{
+              uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDrD47C7tIHpYtvRiO6LWSBy0tdbDWIiyxIKa8InL7hkJDaIMwHx2KrQVZAMUBbWW-Ug0QTwoa8Uu0oKoxGivdBbPpKzSRrrQ0WQHDxFrJqPV2cFLZzNODb9u5H9B7AxvzG3Z72Xy8ZmtEikk84WTLi8IMhVRT150ioYlkh2xWJmr0pcw8LfBOwUIqzCDdh696Dhzpi7VEfhbSvWnCfQO7d04pDx9oKSdsuxZwC393_7OV88N4aZmA",
+            }}
+            contentFit="cover"
+          />
+          <View style={styles.mapOverlay}>
+            <Animated.View
+              style={[
+                styles.mapPulseRing,
+                {
+                  transform: [{ scale: mapPulseAnim }],
+                },
+              ]}
+            />
+            <View style={styles.mapDot} />
+          </View>
+          <View style={styles.mapLabel}>
+            <Text style={[styles.mapLabelText, Theme.typography.labelMd]}>
+              Live Location: {data?.venueName || "Computer Science Lab"} Area
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
 
       {/* Verification Modal (Bottom Sheet Modal) */}
       <Modal
@@ -284,7 +367,7 @@ export default function StudentDashboard() {
                     style={[styles.modalSubheadline, Theme.typography.bodyMd]}
                   >
                     Location matched:{" "}
-                    <Text style={styles.semibold}>Hall A2</Text>
+                    <Text style={styles.semibold}>{data?.venueName || "Computer Science Lab"}</Text>
                   </Text>
                 </View>
               )}
@@ -373,9 +456,11 @@ export default function StudentDashboard() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: Theme.colors.background,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
   },
   header: {
     flexDirection: "row",
@@ -464,62 +549,6 @@ const styles = StyleSheet.create({
   },
   semibold: {
     fontWeight: "600",
-  },
-  activeClassCard: {
-    backgroundColor: Theme.colors.surfaceContainerLowest,
-    borderColor: Theme.colors.outlineVariant,
-    borderWidth: 1,
-    borderRadius: Theme.rounded.md,
-    padding: Theme.spacing.md,
-    marginBottom: Theme.spacing.md,
-    position: "relative",
-    overflow: "hidden",
-    ...Theme.shadows.soft,
-  },
-  cardDecorativeCircle: {
-    position: "absolute",
-    top: -48,
-    right: -48,
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: Theme.colors.primary + "05",
-  },
-  activeTagRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: Theme.spacing.sm,
-  },
-  activePill: {
-    backgroundColor: Theme.colors.primary + "15",
-    paddingHorizontal: Theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: Theme.rounded.full,
-  },
-  activePillText: {
-    color: Theme.colors.primary,
-    fontWeight: "600",
-  },
-  moreBtn: {
-    padding: Theme.spacing.base,
-  },
-  classTitle: {
-    color: Theme.colors.onSurface,
-    fontWeight: "700",
-    marginBottom: Theme.spacing.md,
-  },
-  classDetailsGrid: {
-    flexDirection: "row",
-    gap: Theme.spacing.lg,
-  },
-  detailItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Theme.spacing.xs,
-  },
-  detailText: {
-    color: Theme.colors.onSurfaceVariant,
   },
   ctaButton: {
     height: 56,
