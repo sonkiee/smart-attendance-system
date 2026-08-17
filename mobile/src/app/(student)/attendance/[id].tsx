@@ -1,5 +1,6 @@
 import { SessionCard } from "@/components/session-card";
 import { Theme } from "@/constants/theme";
+import { useGeofence } from "@/constants/use-geofence";
 import { useClockIn } from "@/hooks/mutation/use-auth";
 import { useSessionById } from "@/hooks/queries/user";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,6 +9,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   Easing,
   Modal,
@@ -23,12 +25,22 @@ export default function AttendanceScreen() {
   const router = useRouter();
   const sessionId = useLocalSearchParams().id;
   console.log("sessionId", sessionId);
+
   const { data, isPending } = useSessionById(sessionId as string);
   const { mutate, isPending: isSubmitting } = useClockIn();
+
+  const { isLocating, locationError, resetLocation, verifyLocation } =
+    useGeofence();
   console.log("session data", data);
   const [modalVisible, setModalVisible] = useState(false);
   const [verificationState, setVerificationState] = useState<
-    "verifying" | "verified" | "success"
+    | "verifying"
+    | "verified"
+    | "outside"
+    | "permission-denied"
+    | "location-disabled"
+    | "error"
+    | "success"
   >("verifying");
   const [showBiometric, setShowBiometric] = useState(false);
   const [bioProcessing, setBioProcessing] = useState(false);
@@ -109,9 +121,12 @@ export default function AttendanceScreen() {
     }, 500);
   };
 
-  const handleMarkAttendancePress = () => {
+  const handleMarkAttendancePress = async () => {
     setModalVisible(true);
     setVerificationState("verifying");
+
+    resetLocation();
+
     setShowBiometric(false);
     setBioProcessing(false);
     setBioSuccess(false);
@@ -122,35 +137,47 @@ export default function AttendanceScreen() {
     // Start radar pulse animation
     startModalPulses();
 
-    // State machine timeline simulation
-    setTimeout(() => {
+    try {
+      if (
+        data?.venue?.latitude == null ||
+        data?.venue?.longitude == null ||
+        data?.venue?.radius == null
+      ) {
+        throw new Error("VENUE_LOCATION_UNAVAILABLE");
+      }
+
+      const result = await verifyLocation({
+        latitude: Number(data.venue.latitude),
+        longitude: Number(data.venue.longitude),
+        radius: Number(data.venue.radius),
+      });
+
+      if (!result.isWithinGeofence) {
+        setVerificationState("outside");
+        return;
+      }
+
+      // Location pre-check passed.
       setVerificationState("verified");
 
-      // Animate checkmark scale-in
-      Animated.spring(checkmarkScale, {
-        toValue: 1,
-        tension: 50,
-        friction: 5,
-        useNativeDriver: true,
-      }).start();
+      // Now allow PIN / Face ID.
+      setShowBiometric(true);
+    } catch (error: any) {
+      console.error("Attendance location check failed:", error);
+      Alert.alert("Error", error.message || "An unknown error occurred");
 
-      // Show biometric prompt after a slight delay
-      setTimeout(() => {
-        setShowBiometric(true);
-        Animated.parallel([
-          Animated.timing(bioFadeAnim, {
-            toValue: 1,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(bioTranslateAnim, {
-            toValue: 0,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }, 300);
-    }, 2500);
+      if (error.message === "LOCATION_PERMISSION_DENIED") {
+        setVerificationState("permission-denied");
+        return;
+      }
+
+      if (error.message === "LOCATION_SERVICES_DISABLED") {
+        setVerificationState("location-disabled");
+        return;
+      }
+
+      setVerificationState("error");
+    }
   };
 
   const handleBiometricVerification = () => {
@@ -367,7 +394,9 @@ export default function AttendanceScreen() {
                     style={[styles.modalSubheadline, Theme.typography.bodyMd]}
                   >
                     Location matched:{" "}
-                    <Text style={styles.semibold}>{data?.venueName || "Computer Science Lab"}</Text>
+                    <Text style={styles.semibold}>
+                      {data?.venueName || "Computer Science Lab"}
+                    </Text>
                   </Text>
                 </View>
               )}

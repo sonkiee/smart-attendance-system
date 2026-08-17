@@ -50,6 +50,13 @@ const getById = async (id: string) => {
       courseTitle: courses.courseTitle,
       lecturerId: attendanceSessions.lecturerId,
       venueId: attendanceSessions.venueId,
+      venue: {
+        id: venues.id,
+        name: venues.name,
+        latitude: venues.latitude,
+        longitude: venues.longitude,
+        radius: venues.radiusMeters,
+      },
       sessionDate: attendanceSessions.sessionDate,
       startTime: attendanceSessions.startTime,
       endTime: attendanceSessions.endTime,
