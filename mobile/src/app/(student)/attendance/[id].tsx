@@ -1,18 +1,15 @@
 import { SessionCard } from "@/components/session-card";
 import { Theme } from "@/constants/theme";
-import { useGeofence } from "@/constants/use-geofence";
-import { useClockIn } from "@/hooks/mutation/use-auth";
 import { useSessionById } from "@/hooks/queries/user";
+import { getCurrentLocation } from "@/service/location";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Easing,
-  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -27,36 +24,23 @@ export default function AttendanceScreen() {
   console.log("sessionId", sessionId);
 
   const { data, isPending } = useSessionById(sessionId as string);
-  const { mutate, isPending: isSubmitting } = useClockIn();
-
-  const { isLocating, locationError, resetLocation, verifyLocation } =
-    useGeofence();
-  console.log("session data", data);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [verificationState, setVerificationState] = useState<
-    | "verifying"
-    | "verified"
-    | "outside"
-    | "permission-denied"
-    | "location-disabled"
-    | "error"
-    | "success"
-  >("verifying");
-  const [showBiometric, setShowBiometric] = useState(false);
-  const [bioProcessing, setBioProcessing] = useState(false);
-  const [bioSuccess, setBioSuccess] = useState(false);
-
-  // Animations
-  const pulseAnim1 = useMemo(() => new Animated.Value(0.8), []);
-  const pulseOpacity1 = useMemo(() => new Animated.Value(0.5), []);
-  const pulseAnim2 = useMemo(() => new Animated.Value(0.8), []);
-  const pulseOpacity2 = useMemo(() => new Animated.Value(0.5), []);
-
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const mapPulseAnim = useMemo(() => new Animated.Value(0.95), []);
 
-  const checkmarkScale = useMemo(() => new Animated.Value(0), []);
-  const bioFadeAnim = useMemo(() => new Animated.Value(0), []);
-  const bioTranslateAnim = useMemo(() => new Animated.Value(16), []);
+  useEffect(() => {
+    const fetchUserLocation = async () => {
+      try {
+        const loc = await getCurrentLocation();
+        setUserLocation({ latitude: loc.latitude, longitude: loc.longitude });
+      } catch (err) {
+        console.error("Error getting user location for static map:", err);
+      }
+    };
+    fetchUserLocation();
+  }, []);
 
   // Map pulse animation (dashboard)
   useEffect(() => {
@@ -78,124 +62,28 @@ export default function AttendanceScreen() {
     ).start();
   }, [mapPulseAnim]);
 
-  // Modal pulse animation
-  const startModalPulses = () => {
-    pulseAnim1.setValue(0.8);
-    pulseOpacity1.setValue(0.5);
-    pulseAnim2.setValue(0.8);
-    pulseOpacity2.setValue(0.5);
+  const GEOAPIFY_API_KEY = "526b4cda7ef34bcab3650b2bdd4136e2"; // Replace with your actual API key
 
-    Animated.loop(
-      Animated.parallel([
-        Animated.timing(pulseAnim1, {
-          toValue: 1.5,
-          duration: 2000,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.ease),
-        }),
-        Animated.timing(pulseOpacity1, {
-          toValue: 0,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
+  const venueLonLat = "7.4512039,10.4904007";
+  const userLonLat = "7.450611777383408,10.489893913819477";
 
-    // Stagger second pulse
-    setTimeout(() => {
-      Animated.loop(
-        Animated.parallel([
-          Animated.timing(pulseAnim2, {
-            toValue: 1.5,
-            duration: 2000,
-            useNativeDriver: true,
-            easing: Easing.out(Easing.ease),
-          }),
-          Animated.timing(pulseOpacity2, {
-            toValue: 0,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-        ]),
-      ).start();
-    }, 500);
-  };
+  const mapUri =
+    `https://maps.geoapify.com/v1/staticmap` +
+    `?style=osm-bright` +
+    `&width=600` +
+    `&height=400` +
+    `&center=lonlat:${venueLonLat}` +
+    `&zoom=18` +
+    `&marker=lonlat:${venueLonLat};type:circle;color:%23ff0000;size:large` +
+    `&marker=lonlat:${userLonLat};type:circle;color:%230000ff;size:large` +
+    `&geometry=LINESTRING(${userLonLat},${venueLonLat});stroke:%230000ff;stroke-width:4` +
+    `&apiKey=${GEOAPIFY_API_KEY}`;
 
-  const handleMarkAttendancePress = async () => {
-    setModalVisible(true);
-    setVerificationState("verifying");
-
-    resetLocation();
-
-    setShowBiometric(false);
-    setBioProcessing(false);
-    setBioSuccess(false);
-    checkmarkScale.setValue(0);
-    bioFadeAnim.setValue(0);
-    bioTranslateAnim.setValue(16);
-
-    // Start radar pulse animation
-    startModalPulses();
-
-    try {
-      if (
-        data?.venue?.latitude == null ||
-        data?.venue?.longitude == null ||
-        data?.venue?.radius == null
-      ) {
-        throw new Error("VENUE_LOCATION_UNAVAILABLE");
-      }
-
-      const result = await verifyLocation({
-        latitude: Number(data.venue.latitude),
-        longitude: Number(data.venue.longitude),
-        radius: Number(data.venue.radius),
-      });
-
-      if (!result.isWithinGeofence) {
-        setVerificationState("outside");
-        return;
-      }
-
-      // Location pre-check passed.
-      setVerificationState("verified");
-
-      // Now allow PIN / Face ID.
-      setShowBiometric(true);
-    } catch (error: any) {
-      console.error("Attendance location check failed:", error);
-      Alert.alert("Error", error.message || "An unknown error occurred");
-
-      if (error.message === "LOCATION_PERMISSION_DENIED") {
-        setVerificationState("permission-denied");
-        return;
-      }
-
-      if (error.message === "LOCATION_SERVICES_DISABLED") {
-        setVerificationState("location-disabled");
-        return;
-      }
-
-      setVerificationState("error");
-    }
-  };
-
-  const handleBiometricVerification = () => {
-    setBioProcessing(true);
-
-    setTimeout(() => {
-      setBioProcessing(false);
-      setBioSuccess(true);
-
-      // Transition to success screen after showing check success badge
-      setTimeout(() => {
-        setModalVisible(false);
-        router.push({
-          pathname: "/(student)/success",
-          params: { id: sessionId },
-        });
-      }, 1000);
-    }, 1500);
+  const handleMarkAttendancePress = () => {
+    router.push({
+      pathname: "/to-submit",
+      params: { id: sessionId },
+    });
   };
 
   if (isPending) {
@@ -280,12 +168,12 @@ export default function AttendanceScreen() {
             MARK ATTENDANCE
           </Text>
         </TouchableOpacity>
-        {/* Map Preview Card */}
+        {/* Option A: Static Map Preview Card */}
         <View style={styles.mapCard}>
           <Image
             style={styles.mapBackground}
             source={{
-              uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDrD47C7tIHpYtvRiO6LWSBy0tdbDWIiyxIKa8InL7hkJDaIMwHx2KrQVZAMUBbWW-Ug0QTwoa8Uu0oKoxGivdBbPpKzSRrrQ0WQHDxFrJqPV2cFLZzNODb9u5H9B7AxvzG3Z72Xy8ZmtEikk84WTLi8IMhVRT150ioYlkh2xWJmr0pcw8LfBOwUIqzCDdh696Dhzpi7VEfhbSvWnCfQO7d04pDx9oKSdsuxZwC393_7OV88N4aZmA",
+              uri: "https://maps.geoapify.com/v1/staticmap?style=osm-bright-smooth&width=600&height=400&center=lonlat%3A-122.29009844646316%2C47.54607447032754&zoom=14.3497&marker=lonlat%3A-122.29188334609739%2C47.54403990655936%3Btype%3Aawesome%3Bcolor%3A%23bb3f73%3Bsize%3Ax-large%3Bicon%3Apaw%7Clonlat%3A-122.29282631194182%2C47.549609195001494%3Btype%3Amaterial%3Bcolor%3A%234c905a%3Bicon%3Atree%3Bicontype%3Aawesome%7Clonlat%3A-122.28726954893025%2C47.541766557545884%3Btype%3Amaterial%3Bcolor%3A%234c905a%3Bicon%3Atree%3Bicontype%3Aawesome&apiKey=526b4cda7ef34bcab3650b2bdd4136e2",
             }}
             contentFit="cover"
           />
@@ -307,179 +195,6 @@ export default function AttendanceScreen() {
           </View>
         </View>
       </ScrollView>
-
-      {/* Verification Modal (Bottom Sheet Modal) */}
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <TouchableOpacity
-            style={styles.modalDismissTrigger}
-            activeOpacity={1}
-            onPress={() => setModalVisible(false)}
-          />
-          <View style={styles.bottomSheet}>
-            <View style={styles.dragHandle} />
-
-            <View style={styles.modalContent}>
-              {verificationState === "verifying" ? (
-                // State 1: Verifying Location
-                <View style={styles.stateContainer}>
-                  <View style={styles.radarWrapper}>
-                    <Animated.View
-                      style={[
-                        styles.radarPulse,
-                        {
-                          transform: [{ scale: pulseAnim1 }],
-                          opacity: pulseOpacity1,
-                        },
-                      ]}
-                    />
-                    <Animated.View
-                      style={[
-                        styles.radarPulse,
-                        {
-                          transform: [{ scale: pulseAnim2 }],
-                          opacity: pulseOpacity2,
-                        },
-                      ]}
-                    />
-                    <View style={styles.radarCore}>
-                      <Ionicons
-                        name="location"
-                        size={32}
-                        color={Theme.colors.onPrimary}
-                      />
-                    </View>
-                  </View>
-                  <Text
-                    style={[styles.modalHeadline, Theme.typography.headlineLg]}
-                  >
-                    Verifying location...
-                  </Text>
-                  <Text
-                    style={[styles.modalSubheadline, Theme.typography.bodyMd]}
-                  >
-                    Stay within the room perimeter
-                  </Text>
-                </View>
-              ) : (
-                // State 2: Verified Location
-                <View style={styles.stateContainer}>
-                  <Animated.View
-                    style={[
-                      styles.successIconBox,
-                      { transform: [{ scale: checkmarkScale }] },
-                    ]}
-                  >
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={80}
-                      color={Theme.colors.secondary}
-                    />
-                  </Animated.View>
-                  <Text
-                    style={[
-                      styles.modalHeadline,
-                      Theme.typography.headlineLg,
-                      { color: Theme.colors.secondary },
-                    ]}
-                  >
-                    Geofence Verified
-                  </Text>
-                  <Text
-                    style={[styles.modalSubheadline, Theme.typography.bodyMd]}
-                  >
-                    Location matched:{" "}
-                    <Text style={styles.semibold}>
-                      {data?.venueName || "Computer Science Lab"}
-                    </Text>
-                  </Text>
-                </View>
-              )}
-
-              {/* Biometrics Verify Identity */}
-              {showBiometric && (
-                <Animated.View
-                  style={[
-                    styles.biometricContainer,
-                    {
-                      opacity: bioFadeAnim,
-                      transform: [{ translateY: bioTranslateAnim }],
-                    },
-                  ]}
-                >
-                  <TouchableOpacity
-                    style={[
-                      styles.bioButton,
-                      bioSuccess && styles.bioButtonSuccess,
-                    ]}
-                    activeOpacity={0.8}
-                    disabled={bioProcessing || bioSuccess}
-                    onPress={handleBiometricVerification}
-                  >
-                    {bioProcessing ? (
-                      <View style={styles.btnRow}>
-                        <ActivityIndicator
-                          color={Theme.colors.onPrimary}
-                          size="small"
-                          style={styles.spinner}
-                        />
-                        <Text
-                          style={[
-                            styles.bioBtnText,
-                            Theme.typography.headlineMd,
-                          ]}
-                        >
-                          Processing...
-                        </Text>
-                      </View>
-                    ) : bioSuccess ? (
-                      <View style={styles.btnRow}>
-                        <Ionicons
-                          name="checkmark"
-                          size={24}
-                          color={Theme.colors.onPrimary}
-                        />
-                        <Text
-                          style={[
-                            styles.bioBtnText,
-                            Theme.typography.headlineMd,
-                          ]}
-                        >
-                          Success
-                        </Text>
-                      </View>
-                    ) : (
-                      <View style={styles.btnRow}>
-                        <Ionicons
-                          name="finger-print"
-                          size={24}
-                          color={Theme.colors.onPrimary}
-                        />
-                        <Text
-                          style={[
-                            styles.bioBtnText,
-                            Theme.typography.headlineMd,
-                          ]}
-                        >
-                          Verify Identity
-                        </Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                  <Text style={[styles.bioCaption, Theme.typography.labelMd]}>
-                    Use PIN if Biometrics fail
-                  </Text>
-                </Animated.View>
-              )}
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -490,49 +205,6 @@ const styles = StyleSheet.create({
     backgroundColor: Theme.colors.background,
     paddingHorizontal: 10,
     paddingVertical: 10,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: Theme.spacing.marginMobile,
-    paddingVertical: Theme.spacing.md,
-    backgroundColor: Theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Theme.colors.outlineVariant + "30",
-  },
-  profileSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Theme.spacing.md,
-  },
-  avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: "hidden",
-    borderWidth: 2,
-    borderColor: Theme.colors.primaryContainer + "30",
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
-  },
-  greeting: {
-    color: Theme.colors.onSurface,
-    fontWeight: "700",
-  },
-  degreeText: {
-    color: Theme.colors.outline,
-    marginTop: 2,
-  },
-  notificationBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Theme.colors.surfaceContainer,
-    justifyContent: "center",
-    alignItems: "center",
   },
   scrollContent: {
     paddingHorizontal: Theme.spacing.marginMobile,
@@ -641,168 +313,5 @@ const styles = StyleSheet.create({
   mapLabelText: {
     color: Theme.colors.onSurface,
     fontWeight: "600",
-  },
-  recentActivityHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: Theme.spacing.sm,
-  },
-  activityTitle: {
-    fontWeight: "600",
-    color: Theme.colors.onSurface,
-  },
-  viewAllBtn: {
-    color: Theme.colors.primary,
-  },
-  activityList: {
-    gap: Theme.spacing.xs,
-  },
-  activityItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: Theme.spacing.md,
-    backgroundColor: Theme.colors.surfaceContainerLow,
-    borderRadius: Theme.rounded.md,
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-  activityIconBox: {
-    width: 48,
-    height: 48,
-    backgroundColor: Theme.colors.surfaceContainerHigh,
-    borderRadius: Theme.rounded.default,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: Theme.spacing.md,
-  },
-  activityMeta: {
-    flex: 1,
-  },
-  activityClassName: {
-    color: Theme.colors.onSurface,
-  },
-  activityDate: {
-    color: Theme.colors.outline,
-    marginTop: 2,
-  },
-  presentBadge: {
-    backgroundColor: Theme.colors.secondary + "15",
-    paddingHorizontal: Theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: Theme.rounded.full,
-  },
-  presentText: {
-    color: Theme.colors.secondary,
-    fontWeight: "700",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
-    justifyContent: "flex-end",
-  },
-  modalDismissTrigger: {
-    flex: 1,
-  },
-  bottomSheet: {
-    backgroundColor: Theme.colors.surface,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: Theme.spacing.xl,
-    paddingBottom: Theme.spacing.xl + 20,
-    paddingTop: Theme.spacing.md,
-    ...Theme.shadows.soft,
-  },
-  dragHandle: {
-    width: 48,
-    height: 6,
-    backgroundColor: Theme.colors.outlineVariant,
-    borderRadius: 3,
-    alignSelf: "center",
-    marginBottom: Theme.spacing.lg,
-  },
-  modalContent: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  stateContainer: {
-    alignItems: "center",
-    marginVertical: Theme.spacing.md,
-  },
-  radarWrapper: {
-    width: 128,
-    height: 128,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: Theme.spacing.lg,
-    position: "relative",
-  },
-  radarPulse: {
-    position: "absolute",
-    width: 128,
-    height: 128,
-    borderRadius: 64,
-    backgroundColor: Theme.colors.primary,
-  },
-  radarCore: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Theme.colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 2,
-  },
-  successIconBox: {
-    width: 96,
-    height: 96,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: Theme.spacing.lg,
-  },
-  modalHeadline: {
-    color: Theme.colors.onSurface,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  modalSubheadline: {
-    color: Theme.colors.onSurfaceVariant,
-    marginTop: Theme.spacing.xs,
-    textAlign: "center",
-  },
-  biometricContainer: {
-    width: "100%",
-    marginTop: Theme.spacing.lg,
-    alignItems: "center",
-  },
-  bioButton: {
-    width: "100%",
-    height: 56,
-    backgroundColor: Theme.colors.primary,
-    borderRadius: Theme.rounded.md,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  bioButtonSuccess: {
-    backgroundColor: Theme.colors.secondary,
-  },
-  btnRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: Theme.spacing.xs,
-  },
-  bioBtnText: {
-    color: Theme.colors.onPrimary,
-    fontWeight: "700",
-  },
-  spinner: {
-    marginRight: Theme.spacing.xs,
-  },
-  bioCaption: {
-    color: Theme.colors.onSurfaceVariant,
-    marginTop: Theme.spacing.md,
-    textAlign: "center",
   },
 });

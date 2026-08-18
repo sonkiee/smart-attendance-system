@@ -1,4 +1,4 @@
-import { useAuthStore } from "@/store"; // Added useAuthStore
+import { useAuthStore } from "@/store/auth-store"; // Added useAuthStore
 import {
   Inter_400Regular,
   Inter_600SemiBold,

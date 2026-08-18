@@ -9,22 +9,17 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 
+import { MenuItem } from "@/components/menu-item";
+import { Section } from "@/components/section";
 import { useProfile } from "@/hooks/queries/user";
 
 export default function StudentProfile() {
   const router = useRouter();
   const { data: profile } = useProfile();
-
-  const handleNav = (
-    path: "/(student)/(tabs)/dashboard" | "/(student)/history",
-  ) => {
-    router.replace(path);
-  };
 
   const handleLogout = () => {
     router.replace("/");
@@ -74,7 +69,9 @@ export default function StudentProfile() {
           </View>
 
           <Text style={[styles.profileName, Theme.typography.headlineLg]}>
-            {profile?.student ? `${profile.student.firstName} ${profile.student.lastName}` : "Jane Smith"}
+            {profile?.student
+              ? `${profile.student.firstName} ${profile.student.lastName}`
+              : "Jane Smith"}
           </Text>
           <Text style={[styles.profileId, Theme.typography.bodyMd]}>
             {(profile?.student?.matricNumber || "csc/2020/001").toUpperCase()}
@@ -157,156 +154,31 @@ export default function StudentProfile() {
         </View>
 
         {/* Settings Group: Academic */}
-        <View style={styles.settingsGroup}>
-          <Text style={[styles.groupTitle, Theme.typography.labelMd]}>
-            ACADEMIC & PERSONAL
-          </Text>
-
-          {/* Item 1 */}
-          <TouchableOpacity style={styles.settingsItem} activeOpacity={0.7}>
-            <View style={styles.settingsItemLeft}>
-              <View style={styles.itemIconBox}>
-                <Ionicons
-                  name="card-outline"
-                  size={20}
-                  color={Theme.colors.primary}
-                />
-              </View>
-              <View>
-                <Text
-                  style={[
-                    styles.itemTitle,
-                    Theme.typography.bodyLg,
-                    styles.semibold,
-                  ]}
-                >
-                  Personal Details
-                </Text>
-                <Text style={[styles.itemSubtitle, Theme.typography.caption]}>
-                  Name, Contact, Address
-                </Text>
-              </View>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={Theme.colors.outline}
-            />
-          </TouchableOpacity>
-
-          {/* Item 2 (Commented Out) */}
-          {/* <TouchableOpacity style={styles.settingsItem} activeOpacity={0.7}>
-            <View style={styles.settingsItemLeft}>
-              <View style={styles.itemIconBox}>
-                <Ionicons
-                  name="school-outline"
-                  size={20}
-                  color={Theme.colors.primary}
-                />
-              </View>
-              <View>
-                <Text
-                  style={[
-                    styles.itemTitle,
-                    Theme.typography.bodyLg,
-                    styles.semibold,
-                  ]}
-                >
-                  Course Enrollment
-                </Text>
-                <Text style={[styles.itemSubtitle, Theme.typography.caption]}>
-                  Computer Science (B.Sc)
-                </Text>
-              </View>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={Theme.colors.outline}
-            />
-          </TouchableOpacity> */}
-        </View>
+        <Section title="ACADEMIC & PERSONAL">
+          <MenuItem
+            label="Personal Details"
+            description="Name, Contact, Address"
+            icon="card-outline"
+            onPress={() => router.push("/(student)/personal-details")}
+          />
+        </Section>
 
         {/* Settings Group: Preferences */}
-        <View style={styles.settingsGroup}>
-          <Text style={[styles.groupTitle, Theme.typography.labelMd]}>
-            APP PREFERENCES
-          </Text>
-
-          {/* Item 3 */}
-          <TouchableOpacity
-            style={styles.settingsItem}
-            activeOpacity={0.7}
+        <Section title="APP PREFERENCES">
+          <MenuItem
+            label="Account Settings"
+            description="Privacy, Security, Geofence"
+            icon="settings-outline"
             onPress={() => router.push("/(student)/settings")}
-          >
-            <View style={styles.settingsItemLeft}>
-              <View style={styles.itemIconBox}>
-                <Ionicons
-                  name="settings-outline"
-                  size={20}
-                  color={Theme.colors.primary}
-                />
-              </View>
-              <View>
-                <Text
-                  style={[
-                    styles.itemTitle,
-                    Theme.typography.bodyLg,
-                    styles.semibold,
-                  ]}
-                >
-                  Account Settings
-                </Text>
-                <Text style={[styles.itemSubtitle, Theme.typography.caption]}>
-                  Privacy, Security, Geofence
-                </Text>
-              </View>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={Theme.colors.outline}
-            />
-          </TouchableOpacity>
-
-          {/* Item 4: Log Out */}
-          <TouchableOpacity
-            style={[styles.settingsItem, styles.logoutItem]}
-            activeOpacity={0.7}
+          />
+          <MenuItem
+            label="Log Out"
+            description="Securely exit your session"
+            icon="log-out-outline"
+            isDestructive
             onPress={handleLogout}
-          >
-            <View style={styles.settingsItemLeft}>
-              <View style={[styles.itemIconBox, styles.logoutIconBox]}>
-                <Ionicons
-                  name="log-out-outline"
-                  size={20}
-                  color={Theme.colors.error}
-                />
-              </View>
-              <View>
-                <Text
-                  style={[
-                    styles.itemTitle,
-                    Theme.typography.bodyLg,
-                    styles.semibold,
-                    { color: Theme.colors.error },
-                  ]}
-                >
-                  Log Out
-                </Text>
-                <Text
-                  style={[
-                    styles.itemSubtitle,
-                    Theme.typography.caption,
-                    { color: Theme.colors.error + "99" },
-                  ]}
-                >
-                  Securely exit your session
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
+          />
+        </Section>
       </ScrollView>
     </SafeAreaView>
   );
@@ -475,54 +347,6 @@ const styles = StyleSheet.create({
     color: Theme.colors.onPrimaryContainer,
     fontWeight: "700",
     fontSize: 12,
-  },
-  settingsGroup: {
-    marginBottom: Theme.spacing.lg,
-  },
-  groupTitle: {
-    color: Theme.colors.outline,
-    fontWeight: "600",
-    letterSpacing: 1,
-    paddingHorizontal: Theme.spacing.base,
-    marginBottom: Theme.spacing.sm,
-  },
-  settingsItem: {
-    flexDirection: "row",
-    backgroundColor: Theme.colors.surfaceContainerLowest,
-    borderColor: Theme.colors.outlineVariant,
-    borderWidth: 1,
-    borderRadius: Theme.rounded.md,
-    padding: Theme.spacing.md,
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: Theme.spacing.xs,
-    ...Theme.shadows.soft,
-  },
-  logoutItem: {
-    borderColor: Theme.colors.errorContainer + "40",
-  },
-  settingsItemLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Theme.spacing.md,
-  },
-  itemIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: Theme.rounded.default,
-    backgroundColor: Theme.colors.surfaceContainerLow,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoutIconBox: {
-    backgroundColor: Theme.colors.errorContainer + "30",
-  },
-  itemTitle: {
-    color: Theme.colors.onSurface,
-  },
-  itemSubtitle: {
-    color: Theme.colors.outline,
-    marginTop: 2,
   },
   semibold: {
     fontWeight: "600",

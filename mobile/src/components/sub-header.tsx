@@ -4,7 +4,13 @@ import { router } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export function SubHeader({ title }: { title?: string }) {
+export function SubHeader({
+  title,
+  isCancel,
+}: {
+  title?: string;
+  isCancel?: boolean;
+}) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -16,7 +22,15 @@ export function SubHeader({ title }: { title?: string }) {
         style={styles.backBtn}
         activeOpacity={0.7}
       >
-        <Ionicons name="arrow-back" size={24} color={Theme.colors.onSurface} />
+        {isCancel ? (
+          <Ionicons name="close" size={24} color={Theme.colors.onSurface} />
+        ) : (
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={Theme.colors.onSurface}
+          />
+        )}
       </TouchableOpacity>
       <Text style={[styles.headerTitle, Theme.typography.headlineMd]}>
         {title || "Class Details"}

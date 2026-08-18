@@ -14,11 +14,15 @@ export default function StudentLayout() {
         }}
       />
       <Stack.Screen
-        name="settings"
+        name="to-submit"
         options={{
-          headerShown: true,
-          title: "Account Settings",
-          header: ({ options }) => <SubHeader title={options.title} />,
+          headerShown: false,
+          title: "Verifying",
+          presentation: "formSheet",
+          sheetAllowedDetents: [0.9],
+          sheetGrabberVisible: true,
+          sheetInitialDetentIndex: 0,
+          header: ({ options }) => <SubHeader isCancel title={options.title} />,
         }}
       />
     </Stack>

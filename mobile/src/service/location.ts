@@ -30,7 +30,7 @@ export const getCurrentLocation = async (): Promise<CurrentLocation> => {
   }
 
   const position = await Location.getCurrentPositionAsync({
-    accuracy: Location.Accuracy.High,
+    accuracy: Location.Accuracy.Highest,
   });
 
   return {
