@@ -1,4 +1,9 @@
-import { fetchSessionById, fetchSessions, prefetchUser } from "@/service";
+import {
+  fetchHistory,
+  fetchSessionById,
+  fetchSessions,
+  prefetchUser,
+} from "@/service";
 import { useAuthStore } from "@/store";
 import { useQuery } from "@tanstack/react-query";
 
@@ -27,6 +32,15 @@ export const useSessionById = (sessionId: string) => {
   return useQuery({
     queryKey: ["sessions", sessionId],
     queryFn: () => fetchSessionById(sessionId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
+
+export const useFetchHistory = () => {
+  return useQuery({
+    queryKey: ["history"],
+    queryFn: fetchHistory,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

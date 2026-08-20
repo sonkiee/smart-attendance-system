@@ -7,7 +7,6 @@ import { SessionCard } from "./session-card";
 export function Sessions() {
   const { data: sessions, isLoading } = useFetchSessions();
 
-  console.log("sessions data:", sessions);
   return (
     <FlatList
       data={sessions || []}

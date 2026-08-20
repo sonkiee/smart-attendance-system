@@ -5,7 +5,13 @@ import { Image } from "expo-image";
 import { usePathname } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function Header({ title }: { title: string }) {
+export default function Header({
+  title,
+  onPress,
+}: {
+  title: string;
+  onPress?: () => void;
+}) {
   const pathname = usePathname();
   const isHome = pathname === "/home";
   const { data: profile, isLoading } = useProfile();
@@ -14,7 +20,8 @@ export default function Header({ title }: { title: string }) {
     <View style={styles.header}>
       <View style={styles.profileSection}>
         <TouchableOpacity
-          // onPress={handleBackToSelect}
+          disabled={!onPress}
+          onPress={onPress}
           style={styles.avatarContainer}
         >
           <Image

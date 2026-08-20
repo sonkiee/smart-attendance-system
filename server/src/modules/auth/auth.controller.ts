@@ -40,7 +40,7 @@ const signin = async (req: Request, res: Response) => {
 
   const token = jwt.sign(user);
 
-  return res.status(200).json({ token });
+  return res.status(200).json({ token, role: user.role });
 };
 
 const activate = async (req: Request, res: Response) => {
@@ -120,7 +120,7 @@ const lecturerSignin = async (req: Request, res: Response) => {
 
   const token = jwt.sign(user);
 
-  return res.status(200).json({ token });
+  return res.status(200).json({ token, role: user.role });
 };
 
 export { signin, activate, lecturerSignin };

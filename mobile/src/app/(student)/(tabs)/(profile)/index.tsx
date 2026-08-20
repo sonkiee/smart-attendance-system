@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import {
-  SafeAreaView,
+  Alert,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -16,13 +16,35 @@ import Svg, { Circle } from "react-native-svg";
 import { MenuItem } from "@/components/menu-item";
 import { Section } from "@/components/section";
 import { useProfile } from "@/hooks/queries/user";
+import { useAuthStore } from "@/store/auth-store";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function StudentProfile() {
   const router = useRouter();
   const { data: profile } = useProfile();
+  const { logout } = useAuthStore((state) => state);
 
   const handleLogout = () => {
-    router.replace("/");
+    Alert.alert(
+      "Log Out",
+      "Are you sure you want to log out?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Log Out",
+          style: "destructive",
+          onPress: () => {
+            logout();
+            // router.replace("/login");
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+    // router.replace("/");
   };
 
   // Circular Stats Calculations
@@ -159,7 +181,9 @@ export default function StudentProfile() {
             label="Personal Details"
             description="Name, Contact, Address"
             icon="card-outline"
-            onPress={() => router.push("/(student)/personal-details")}
+            onPress={() =>
+              router.push("/(student)/(tabs)/(profile)/personal-details")
+            }
           />
         </Section>
 
@@ -169,7 +193,7 @@ export default function StudentProfile() {
             label="Account Settings"
             description="Privacy, Security, Geofence"
             icon="settings-outline"
-            onPress={() => router.push("/(student)/settings")}
+            onPress={() => router.push("/(student)/(tabs)/(profile)/settings")}
           />
           <MenuItem
             label="Log Out"

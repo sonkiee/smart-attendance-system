@@ -1,8 +1,9 @@
 import { AttendanceItem } from "@/components/attendance-item";
 import Header from "@/components/header";
 import { Sessions } from "@/components/sessions";
-import { courses } from "@/constants";
 import { Theme } from "@/constants/theme";
+import { useFetchHistory } from "@/hooks/queries/user";
+import { router } from "expo-router";
 import {
   FlatList,
   StatusBar,
@@ -14,6 +15,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function StudentDashboard() {
+  const { data, isPending } = useFetchHistory();
+  console.log("history data", data);
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar
@@ -22,10 +25,13 @@ export default function StudentDashboard() {
       />
 
       {/* Header */}
-      <Header title="Hello," />
+      <Header
+        onPress={() => router.push("/(student)/(tabs)/(profile)")}
+        title="Hello,"
+      />
 
       <FlatList
-        data={courses}
+        data={data || []}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => <AttendanceItem item={item} />}
         ListHeaderComponent={
@@ -40,6 +46,11 @@ export default function StudentDashboard() {
           </>
         }
         contentContainerStyle={styles.scrollContent}
+        ListEmptyComponent={
+          <View style={styles.stateContainer}>
+            <Text style={styles.stateText}>No recent activity</Text>
+          </View>
+        }
       />
     </SafeAreaView>
   );
@@ -419,5 +430,10 @@ const styles = StyleSheet.create({
     color: Theme.colors.onSurfaceVariant,
     marginTop: Theme.spacing.md,
     textAlign: "center",
+  },
+  stateText: {
+    color: Theme.colors.onSurfaceVariant,
+    marginTop: Theme.spacing.md,
+    fontWeight: "600",
   },
 });

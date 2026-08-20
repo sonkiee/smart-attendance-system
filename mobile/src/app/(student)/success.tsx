@@ -68,7 +68,7 @@ export default function AttendanceSuccess() {
 
   const handleDone = () => {
     // Navigate back to the student dashboard
-    router.replace("/(student)/(tabs)/dashboard");
+    router.replace("/(student)/(tabs)/home");
   };
 
   const formattedTime = useMemo(() => {

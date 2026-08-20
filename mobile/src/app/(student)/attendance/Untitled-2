@@ -30,7 +30,6 @@ export default function AttendanceScreen() {
 
   const { isLocating, locationError, resetLocation, verifyLoation } =
     useGeofence();
-  console.log("session data", data);
   const [modalVisible, setModalVisible] = useState(false);
   const [verificationState, setVerificationState] = useState<
     "verifying" | "verified" | "success"

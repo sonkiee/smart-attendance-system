@@ -19,6 +19,7 @@ export default function RootLayout() {
   const segments = useSegments(); // Added
   const router = useRouter(); // Added
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn); //Added
+  const user = useAuthStore((state) => state.user);
 
   const [loaded, error] = useFonts({
     "Inter-Regular": Inter_400Regular,
@@ -36,7 +37,7 @@ export default function RootLayout() {
 
   // Global Auth Guard Route Redirect effect
   useEffect(() => {
-    if (!loaded && !error) return; // Wait until fonts/splash screenare ready
+    if (!loaded && !error) return; // Wait until fonts/splash screen are ready
 
     const inAuthGroup = segments[0] === "(auth)";
 
@@ -44,10 +45,14 @@ export default function RootLayout() {
       // Redirect to the login page if logged out
       router.replace("/(auth)");
     } else if (isLoggedIn && inAuthGroup) {
-      // Redirect to student portal if logged in
-      router.replace("/(student)/(tabs)/home");
+      // Redirect dynamically based on role
+      if (user?.role === "admin") {
+        router.replace("/(lecturer)/(tabs)/home");
+      } else {
+        router.replace("/(student)/(tabs)/home");
+      }
     }
-  }, [isLoggedIn, segments, loaded, error, router]);
+  }, [isLoggedIn, user, segments, loaded, error, router]);
 
   if (!loaded && !error) {
     return null;

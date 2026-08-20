@@ -1,42 +1,42 @@
-import { useSignin } from "@/hooks/mutation/use-auth";
-import { Ionicons } from "@expo/vector-icons";
+import { Button } from "@/components/button";
+import { Input } from "@/components/input";
+import { useLecturerSignin, useStudentSignin } from "@/hooks/mutation/use-auth";
+import {
+  lecturerSigninSchema,
+  LecturerSigninSchema,
+  studentSigninSchema,
+  StudentSigninSchema,
+} from "@/schemas";
+import { MenuView } from "@expo/ui/community/menu";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
-  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Theme } from "../../constants/theme";
 
-export default function LoginScreen() {
-  const { mutate, isPending } = useSignin();
+export default function SigninScreen({
+  role: initialRole,
+}: {
+  role?: "admin" | "student";
+}) {
   const router = useRouter();
-  const [id, setId] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-
-  const handleSubmit = () => {
-    if (!id || !password) return;
-    const data = { id, password };
-
-    console.log(id);
-
-    mutate(data, {
-      onSuccess: () => {},
-      onError: () => {},
-    });
-  };
+  const [currentRole, setCurrentRole] = useState<"admin" | "student">(
+    initialRole || "student",
+  );
+  const isAdmin = currentRole === "admin";
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -44,6 +44,32 @@ export default function LoginScreen() {
         barStyle="dark-content"
         backgroundColor={Theme.colors.background}
       />
+
+      {/* Top-Right Native Context Menu Toggle */}
+      <View style={styles.floatingHeaderButton}>
+        <MenuView
+          title="Sign In Options"
+          onPressAction={({ nativeEvent }) => {
+            if (nativeEvent.event === "toggle-role") {
+              setCurrentRole(isAdmin ? "student" : "admin");
+            }
+          }}
+          actions={[
+            {
+              id: "toggle-role",
+              title: isAdmin ? "Student Login" : "Lecturer Login",
+              // image: isAdmin ? "graduationcap" : "key",
+            },
+          ]}
+        >
+          <MaterialCommunityIcons
+            name="dots-vertical"
+            size={24}
+            color={Theme.colors.outline}
+            style={{ padding: 8 }}
+          />
+        </MenuView>
+      </View>
 
       {/* Decorative Atmospheric Background Circles */}
       <View style={styles.backgroundDecor} pointerEvents="none">
@@ -72,157 +98,22 @@ export default function LoginScreen() {
                 />
               </View>
               <Text style={[styles.title, Theme.typography.headlineLg]}>
-                Welcome Back
+                {isAdmin ? "Lecturer Control Panel" : "Welcome Back"}
               </Text>
               <Text style={[styles.subtitle, Theme.typography.bodyMd]}>
-                Secure biometric and geofence-verified attendance for modern
-                campuses.
+                {isAdmin
+                  ? "Configure attendance sessions, track real-time roll call, and verify student presence."
+                  : "Secure biometric and geofence-verified attendance for modern campuses."}
               </Text>
             </View>
 
             {/* Login Card */}
             <View style={[styles.card, Theme.shadows.soft]}>
-              {/* ID Field */}
-              <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, Theme.typography.labelMd]}>
-                  Student or Staff ID
-                </Text>
-                <View style={styles.inputWrapper}>
-                  <Ionicons
-                    name="card-outline"
-                    size={20}
-                    color={Theme.colors.outline}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[styles.textInput, Theme.typography.bodyLg]}
-                    placeholder="Enter your unique ID"
-                    placeholderTextColor={Theme.colors.outlineVariant}
-                    value={id}
-                    onChangeText={setId}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                </View>
-              </View>
-
-              {/* Password Field */}
-              <View style={styles.inputContainer}>
-                <View style={styles.passwordLabelRow}>
-                  <Text style={[styles.inputLabel, Theme.typography.labelMd]}>
-                    Password
-                  </Text>
-                  <TouchableOpacity activeOpacity={0.7}>
-                    <Text style={[styles.forgotText, Theme.typography.labelMd]}>
-                      Forgot Password?
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.inputWrapper}>
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={20}
-                    color={Theme.colors.outline}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[styles.textInput, Theme.typography.bodyLg]}
-                    placeholder="••••••••"
-                    placeholderTextColor={Theme.colors.outlineVariant}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!showPassword}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                  <TouchableOpacity
-                    style={styles.eyeButton}
-                    onPress={() => setShowPassword(!showPassword)}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons
-                      name={showPassword ? "eye-off-outline" : "eye-outline"}
-                      size={20}
-                      color={Theme.colors.outline}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Submit Button */}
-              <TouchableOpacity
-                style={[
-                  styles.submitButton,
-                  success && styles.submitButtonSuccess,
-                ]}
-                activeOpacity={0.8}
-                disabled={loading || success}
-                onPress={handleSubmit}
-              >
-                {loading ? (
-                  <ActivityIndicator
-                    color={Theme.colors.onPrimary}
-                    size="small"
-                  />
-                ) : success ? (
-                  <Ionicons
-                    name="checkmark-circle-outline"
-                    size={24}
-                    color={Theme.colors.onPrimary}
-                  />
-                ) : (
-                  <View style={styles.submitBtnContent}>
-                    <Text
-                      style={[styles.submitText, Theme.typography.headlineMd]}
-                    >
-                      Sign In
-                    </Text>
-                    <Ionicons
-                      name="arrow-forward"
-                      size={20}
-                      color={Theme.colors.onPrimary}
-                    />
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              {/* Divider */}
-              {/* <View style={styles.dividerRow}>
-                <View style={styles.dividerLine} />
-                <Text style={[styles.dividerText, Theme.typography.labelMd]}>
-                  Quick Access
-                </Text>
-                <View style={styles.dividerLine} />
-              </View> */}
-
-              {/* Biometrics Options */}
-              {/* <View style={styles.biometricsRow}>
-                <TouchableOpacity
-                  style={styles.bioButton}
-                  activeOpacity={0.7}
-                  onPress={handleBiometricLogin}
-                >
-                  <Ionicons name="finger-print-outline" size={28} color={Theme.colors.onSurfaceVariant} />
-                  <Text style={[styles.bioText, Theme.typography.labelMd]}>Touch ID</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.bioButton}
-                  activeOpacity={0.7}
-                  onPress={handleBiometricLogin}
-                >
-                  <Ionicons name="scan-outline" size={28} color={Theme.colors.onSurfaceVariant} />
-                  <Text style={[styles.bioText, Theme.typography.labelMd]}>Face ID</Text>
-                </TouchableOpacity>
-              </View> */}
+              {isAdmin ? <LecturerLoginForm /> : <StudentLoginForm />}
             </View>
 
             {/* Footer */}
             <View style={styles.footer}>
-              {/* <Text style={[styles.registerPrompt, Theme.typography.bodyMd]}>
-                Don{"'"}t have an account yet?{" "}
-                <Text style={styles.registerLink}>Register Account</Text>
-              </Text> */}
-
               <View style={styles.footerRow}>
                 <View style={styles.statusContainer}>
                   <View style={styles.statusDot} />
@@ -241,6 +132,17 @@ export default function LoginScreen() {
                   </Text>
                 </View>
               </View>
+
+              <TouchableOpacity
+                onPress={() => router.push("/(auth)/admin")}
+                style={styles.versionContainer}
+              >
+                <MaterialCommunityIcons
+                  name="information-outline"
+                  size={16}
+                  color={Theme.colors.outline}
+                />
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
@@ -249,10 +151,125 @@ export default function LoginScreen() {
   );
 }
 
+function StudentLoginForm() {
+  const { mutate, isPending } = useStudentSignin();
+  const { control, handleSubmit } = useForm<StudentSigninSchema>({
+    resolver: zodResolver(studentSigninSchema),
+    defaultValues: {
+      matricNumber: "",
+      password: "",
+    },
+    mode: "onChange",
+  });
+
+  const onSubmit = (data: StudentSigninSchema) => {
+    mutate(data, {
+      onSuccess: () => {},
+      onError: (error) => {
+        Alert.alert(
+          "Login Failed",
+          error.message || "An error occurred during login.",
+        );
+      },
+    });
+  };
+
+  return (
+    <>
+      {/* ID Field */}
+      <Input
+        name="matricNumber"
+        control={control}
+        icon="school-outline"
+        label="Matriculation ID"
+        placeholder="Enter your Matriculation ID"
+      />
+
+      {/* Password Field */}
+      <Input
+        name="password"
+        control={control}
+        icon="lock-outline"
+        label="Password"
+        placeholder="••••••••"
+        secureTextEntry
+      />
+
+      {/* Submit Button */}
+      <Button
+        label="Sign in"
+        loading={isPending}
+        onPress={handleSubmit(onSubmit)}
+      />
+    </>
+  );
+}
+
+function LecturerLoginForm() {
+  const { mutate, isPending } = useLecturerSignin();
+  const { control, handleSubmit } = useForm<LecturerSigninSchema>({
+    resolver: zodResolver(lecturerSigninSchema),
+    defaultValues: {
+      staffNumber: "",
+      password: "",
+    },
+    mode: "onChange",
+  });
+
+  const onSubmit = (data: LecturerSigninSchema) => {
+    mutate(data as any, {
+      onSuccess: () => {},
+      onError: (error) => {
+        Alert.alert(
+          "Login Failed",
+          error.message || "An error occurred during login.",
+        );
+      },
+    });
+  };
+
+  return (
+    <>
+      {/* Staff Number Field */}
+      <Input
+        name="staffNumber"
+        control={control}
+        icon="account"
+        label="Lecturer Staff Number"
+        placeholder="Enter your staff number"
+      />
+
+      {/* Password Field */}
+      <Input
+        name="password"
+        control={control}
+        icon="lock-outline"
+        label="Password"
+        placeholder="••••••••"
+        secureTextEntry
+      />
+
+      {/* Submit Button */}
+      <Button
+        label="Sign in"
+        loading={isPending}
+        onPress={handleSubmit(onSubmit)}
+      />
+    </>
+  );
+}
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: Theme.colors.background,
+  },
+  floatingHeaderButton: {
+    position: "absolute",
+    top: 16,
+    right: 20,
+    zIndex: 10,
+    padding: 8,
   },
   backgroundDecor: {
     ...StyleSheet.absoluteFill,

@@ -69,6 +69,25 @@ const getActiveForStudent = async (req: Request, res: Response) => {
   }
 };
 
+const getActiveForLecturer = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user || user.role !== "lecturer") {
+      return res.status(403).json({ message: "Only lecturers can view active sessions" });
+    }
+
+    const lecturer = await lecturerService.findByUserId(user.id);
+    if (!lecturer) {
+      return res.status(403).json({ message: "Lecturer profile not found for user" });
+    }
+
+    const sessions = await service.getActiveSessionsForLecturer(lecturer.id);
+    return res.status(200).json(sessions);
+  } catch (error: any) {
+    return res.status(500).json({ message: "Failed to fetch active sessions", error: error.message });
+  }
+};
+
 const closeSession = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
@@ -138,4 +157,4 @@ const getById = async (req: Request, res: Response) => {
   }
 };
 
-export { create, getActiveForStudent, closeSession, toggleRepMarking, getById };
+export { create, getActiveForStudent, getActiveForLecturer, closeSession, toggleRepMarking, getById };

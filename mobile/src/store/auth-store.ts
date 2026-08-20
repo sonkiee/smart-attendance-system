@@ -3,10 +3,17 @@ import { secureStorage } from "@/utils/storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+interface User {
+  role: "admin" | "student";
+}
+
 interface AuthState {
-  token: string | null;
+  user: User | null;
+  token: string | null; // Token is stored securely here
   securityPin: string | null; // PIN is stored securely here
   isLoggedIn: boolean;
+  setAuth: (token: string | null, user: User | null) => void;
+  setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
   setSecurityPin: (pin: string | null) => void;
   logout: () => void;
@@ -15,12 +22,16 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
+      user: null,
       token: null,
       securityPin: null,
       isLoggedIn: false,
-      setToken: (token) => set({ token, isLoggedIn: !!token }),
+      setAuth: (token, user) => set({ token, user, isLoggedIn: !!token && !!user }),
+      setUser: (user) => set((state) => ({ user, isLoggedIn: !!user && !!state.token })),
+      setToken: (token) => set((state) => ({ token, isLoggedIn: !!state.user && !!token })),
       setSecurityPin: (pin) => set({ securityPin: pin }),
-      logout: () => set({ token: null, securityPin: null, isLoggedIn: false }),
+      logout: () =>
+        set({ user: null, token: null, securityPin: null, isLoggedIn: false }),
     }),
     {
       name: "auth-secure-storage",

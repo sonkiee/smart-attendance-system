@@ -1,10 +1,10 @@
-import Header from "@/components/header";
 import { AttendanceItem } from "@/components/attendance-item";
+import Header from "@/components/header";
 import { Theme } from "@/constants/theme";
+import { useFetchHistory } from "@/hooks/queries/user";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import {
-  SafeAreaView,
+  ActivityIndicator,
   SectionList,
   StatusBar,
   StyleSheet,
@@ -12,81 +12,119 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-interface HistoryRecord {
-  id: string;
-  course: string;
-  date: string;
-  status: string;
-  iconName: keyof typeof Ionicons.glyphMap;
-}
+// Helper arrays for custom date formatting
+const months = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+const shortMonths = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
+
+/**
+ * Safely formats a date string to the style expected by AttendanceItem (e.g., "Oct 24 • 09:15 AM")
+ * avoiding Hermes engine locale formatting bugs in React Native.
+ */
+const formatDate = (dateString: string) => {
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return dateString;
+
+  const month = shortMonths[d.getMonth()];
+  const day = d.getDate();
+  
+  let hours = d.getHours();
+  const minutes = d.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12; // Format hour '0' to '12'
+  const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+
+  return `${month} ${day} • ${hours}:${minutesStr} ${ampm}`;
+};
+
+/**
+ * Dynamically assigns an icon based on course code prefix.
+ */
+const getIconForCourse = (courseCode: string): keyof typeof Ionicons.glyphMap => {
+  const code = courseCode?.toUpperCase() || "";
+  if (code.startsWith("CSC")) return "terminal-outline";
+  if (code.startsWith("MTH")) return "calculator-outline";
+  if (code.startsWith("ARC")) return "construct-outline";
+  if (code.startsWith("PSY")) return "people-outline";
+  return "school-outline"; // Fallback default
+};
+
+/**
+ * Groups flat history list from API into sections categorized by "Month Year" for SectionList.
+ */
+const groupHistoryByMonth = (records: any[]) => {
+  const groups: { [key: string]: any[] } = {};
+
+  records.forEach((record) => {
+    const dateObj = new Date(record.markedAt || record.sessionDate);
+    if (isNaN(dateObj.getTime())) return;
+
+    const monthName = months[dateObj.getMonth()];
+    const year = dateObj.getFullYear();
+    const monthYear = `${monthName} ${year}`;
+
+    if (!groups[monthYear]) {
+      groups[monthYear] = [];
+    }
+
+    groups[monthYear].push({
+      id: record.sessionId || record.id || Math.random().toString(),
+      course: record.courseCode || record.courseTitle || "CSC 401",
+      date: formatDate(record.markedAt || `${record.sessionDate}T${record.startTime}`),
+      status: record.status || "Present",
+      iconName: getIconForCourse(record.courseCode),
+    });
+  });
+
+  return Object.keys(groups).map((monthYear) => ({
+    title: monthYear,
+    count: groups[monthYear].length,
+    data: groups[monthYear],
+  }));
+};
 
 export default function StudentHistory() {
-  const router = useRouter();
+  const { data, isPending } = useFetchHistory();
 
-  const handleNav = (
-    path: "/(student)/(tabs)/dashboard" | "/(student)/profile",
-  ) => {
-    router.replace(path);
-  };
+  // Render a clean activity indicator while loading data
+  if (isPending) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={Theme.colors.background}
+        />
+        <Header title="History" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Theme.colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-  const handleBackToSelect = () => {
-    router.replace("/");
-  };
+  // Calculate dynamic stats from fetched API records
+  const totalDays = data ? data.length : 0;
+  const attendanceRate = (() => {
+    if (!data || data.length === 0) return "0%";
+    const attended = data.filter(
+      (item: any) =>
+        item.status?.toLowerCase() === "present" ||
+        item.status?.toLowerCase() === "late" ||
+        item.status?.toLowerCase() === "unverified"
+    ).length;
+    return `${Math.round((attended / data.length) * 100)}%`;
+  })();
 
-  const octoberRecords: HistoryRecord[] = [
-    {
-      id: "oct-1",
-      course: "CSC 423",
-      date: "Oct 24 • 09:15 AM",
-      status: "Present",
-      iconName: "school-outline",
-    },
-    {
-      id: "oct-2",
-      course: "ARC 301",
-      date: "Oct 23 • 11:30 AM",
-      status: "Present",
-      iconName: "construct-outline",
-    },
-    {
-      id: "oct-3",
-      course: "CSC 423",
-      date: "Oct 21 • 09:12 AM",
-      status: "Present",
-      iconName: "terminal-outline",
-    },
-  ];
-
-  const septemberRecords: HistoryRecord[] = [
-    {
-      id: "sep-1",
-      course: "MTH 211",
-      date: "Sep 28 • 08:00 AM",
-      status: "Present",
-      iconName: "calculator-outline",
-    },
-    {
-      id: "sep-2",
-      course: "PSY 102",
-      date: "Sep 27 • 14:45 PM",
-      status: "Present",
-      iconName: "people-outline",
-    },
-  ];
-
-  const sections = [
-    {
-      title: "October 2024",
-      count: 12,
-      data: octoberRecords,
-    },
-    {
-      title: "September 2024",
-      count: 24,
-      data: septemberRecords,
-    },
-  ];
+  const sections = data ? groupHistoryByMonth(data) : [];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -127,7 +165,7 @@ export default function StudentHistory() {
                 TOTAL DAYS
               </Text>
               <Text style={[styles.statValue, Theme.typography.headlineLg]}>
-                22
+                {totalDays}
               </Text>
             </View>
             <View style={styles.statCard}>
@@ -141,7 +179,7 @@ export default function StudentHistory() {
                   { color: Theme.colors.secondary },
                 ]}
               >
-                98%
+                {attendanceRate}
               </Text>
             </View>
           </View>
@@ -158,6 +196,13 @@ export default function StudentHistory() {
             </Text>
           </TouchableOpacity>
         }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={[styles.emptyText, Theme.typography.bodyMd]}>
+              No attendance records found
+            </Text>
+          </View>
+        }
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       />
@@ -169,41 +214,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: Theme.colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: Theme.spacing.marginMobile,
-    paddingVertical: Theme.spacing.md,
-    backgroundColor: Theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Theme.colors.outlineVariant + "30",
-  },
-  profileSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Theme.spacing.md,
-  },
-  avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: Theme.colors.outlineVariant,
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
-  },
-  title: {
-    color: Theme.colors.onSurface,
-    fontWeight: "700",
-  },
-  notificationBtn: {
-    padding: Theme.spacing.xs,
-    borderRadius: 20,
   },
   scrollContent: {
     paddingHorizontal: Theme.spacing.marginMobile,
@@ -264,7 +274,19 @@ const styles = StyleSheet.create({
     color: Theme.colors.onSurfaceVariant,
     fontWeight: "600",
   },
-  bold: {
-    fontWeight: "700",
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Theme.colors.background,
+  },
+  emptyContainer: {
+    padding: Theme.spacing.xl,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    color: Theme.colors.outline,
+    fontWeight: "600",
   },
 });

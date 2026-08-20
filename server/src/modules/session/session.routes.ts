@@ -10,6 +10,11 @@ router.route("/active")
   .get(shield, controller.getActiveForStudent)
   .all(methodNotAllowed);
 
+// Get active sessions for a lecturer
+router.route("/active/lecturer")
+  .get(shield, controller.getActiveForLecturer)
+  .all(methodNotAllowed);
+
 // Create a session
 router.route("/")
   .post(shield, controller.create)

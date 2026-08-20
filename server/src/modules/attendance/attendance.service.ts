@@ -64,7 +64,24 @@ const markSelf = async (data: {
     throw new Error("You are not enrolled in this course");
   }
 
-  // 3. Verify and Tie Device ID
+  // 3. Check if Attendance is Already Marked
+  const [existingRecord] = await db
+    .select({ id: attendanceRecords.id })
+    .from(attendanceRecords)
+    .where(
+      and(
+        eq(attendanceRecords.sessionId, data.sessionId),
+        eq(attendanceRecords.studentId, data.studentId)
+      )
+    )
+    .limit(1);
+
+  if (existingRecord) {
+    throw new Error("You have already marked attendance for this session");
+  }
+
+
+  // 4. Verify and Tie Device ID
   const [studentProfile] = await db
     .select({ userId: students.userId })
     .from(students)
@@ -87,13 +104,13 @@ const markSelf = async (data: {
     throw new Error("Device mismatch. This account is tied to another device.");
   }
 
-  // 4. Verify Passcode
+  // 5. Verify Passcode
   const isCodeCorrect = session.attendanceCode === data.attendanceCode.trim();
   if (!isCodeCorrect) {
     throw new Error("Invalid attendance code");
   }
 
-  // 5. Verify Proximity (Bluetooth BLE or GPS)
+  // 6. Verify Proximity (Bluetooth BLE or GPS)
   let locationVerified = false;
   let distanceMeters: number | null = null;
 
@@ -111,7 +128,7 @@ const markSelf = async (data: {
     throw new Error("GPS coordinates or Bluetooth verification is required");
   }
 
-  // 6. Check if student is late or on-time
+  // 7. Check if student is late or on-time
   let status: "present" | "late" | "unverified" = "present";
 
   if (!locationVerified) {
@@ -135,7 +152,7 @@ const markSelf = async (data: {
     }
   }
 
-  // 7. Upsert the attendance record
+  // 8. Upsert the attendance record
   const recordValues = {
     sessionId: data.sessionId,
     studentId: data.studentId,

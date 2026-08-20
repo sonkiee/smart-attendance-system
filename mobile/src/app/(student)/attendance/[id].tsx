@@ -113,6 +113,8 @@ export default function AttendanceScreen() {
       })
     : "Aug 16";
 
+  console.log("session data", data);
+
   return (
     <SafeAreaView edges={["bottom"]} style={{ flex: 1 }}>
       <ScrollView style={styles.container}>

@@ -11,18 +11,41 @@ const markSelf = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || user.role !== "student") {
-      return res.status(403).json({ message: "Only students can self-mark attendance" });
+      return res
+        .status(403)
+        .json({ message: "Only students can self-mark attendance" });
     }
 
     const student = await studentService.findByUserId(user.id);
     if (!student) {
-      return res.status(403).json({ message: "Student profile not found for user" });
+      return res
+        .status(403)
+        .json({ message: "Student profile not found for user" });
     }
 
-    const { sessionId, latitude, longitude, bleVerified, deviceId, attendanceCode } = req.body;
+    const {
+      sessionId,
+      latitude,
+      longitude,
+      bleVerified,
+      deviceId,
+      attendanceCode,
+    } = req.body;
+    console.log("Received markSelf request:", {
+      sessionId,
+      latitude,
+      longitude,
+      bleVerified,
+      deviceId,
+      attendanceCode,
+    });
 
     if (!sessionId || !deviceId || !attendanceCode) {
-      return res.status(400).json({ message: "sessionId, deviceId, and attendanceCode are required" });
+      return res
+        .status(400)
+        .json({
+          message: "sessionId, deviceId, and attendanceCode are required",
+        });
     }
 
     const record = await service.markSelf({
@@ -52,7 +75,9 @@ const markManual = async (req: Request, res: Response) => {
     const { studentId, status } = req.body;
 
     if (!studentId || !status) {
-      return res.status(400).json({ message: "studentId and status are required" });
+      return res
+        .status(400)
+        .json({ message: "studentId and status are required" });
     }
 
     const session = await sessionService.getById(sessionId);
@@ -64,12 +89,22 @@ const markManual = async (req: Request, res: Response) => {
     if (user.role === "lecturer") {
       const lecturer = await lecturerService.findByUserId(user.id);
       if (!lecturer || session.lecturerId !== lecturer.id) {
-        return res.status(403).json({ message: "You are not authorized to mark attendance for this session" });
+        return res
+          .status(403)
+          .json({
+            message:
+              "You are not authorized to mark attendance for this session",
+          });
       }
     } else if (user.role === "student") {
       // Check if session allows Course Reps to mark
       if (!session.allowRepMarking) {
-        return res.status(403).json({ message: "Lecturer has not authorized Course Reps to take attendance for this session" });
+        return res
+          .status(403)
+          .json({
+            message:
+              "Lecturer has not authorized Course Reps to take attendance for this session",
+          });
       }
 
       const repStudent = await studentService.findByUserId(user.id);
@@ -84,13 +119,17 @@ const markManual = async (req: Request, res: Response) => {
         .where(
           and(
             eq(courseReps.courseId, session.courseId),
-            eq(courseReps.studentId, repStudent.student.id)
-          )
+            eq(courseReps.studentId, repStudent.student.id),
+          ),
         )
         .limit(1);
 
       if (!repRecord) {
-        return res.status(403).json({ message: "You are not registered as a Course Rep for this course" });
+        return res
+          .status(403)
+          .json({
+            message: "You are not registered as a Course Rep for this course",
+          });
       }
     } else {
       return res.status(403).json({ message: "Unauthorized role" });
@@ -108,7 +147,12 @@ const markManual = async (req: Request, res: Response) => {
       record,
     });
   } catch (error: any) {
-    return res.status(500).json({ message: "Failed to mark attendance manually", error: error.message });
+    return res
+      .status(500)
+      .json({
+        message: "Failed to mark attendance manually",
+        error: error.message,
+      });
   }
 };
 
@@ -137,7 +181,12 @@ const getHistory = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Unsupported role" });
     }
   } catch (error: any) {
-    return res.status(500).json({ message: "Failed to fetch attendance history", error: error.message });
+    return res
+      .status(500)
+      .json({
+        message: "Failed to fetch attendance history",
+        error: error.message,
+      });
   }
 };
 
@@ -145,7 +194,9 @@ const getUnverified = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || user.role !== "lecturer") {
-      return res.status(403).json({ message: "Only lecturers can view unverified records" });
+      return res
+        .status(403)
+        .json({ message: "Only lecturers can view unverified records" });
     }
 
     const sessionId = req.params.sessionId as string;
@@ -156,13 +207,23 @@ const getUnverified = async (req: Request, res: Response) => {
 
     const lecturer = await lecturerService.findByUserId(user.id);
     if (!lecturer || session.lecturerId !== lecturer.id) {
-      return res.status(403).json({ message: "You are not authorized to view unverified records for this session" });
+      return res
+        .status(403)
+        .json({
+          message:
+            "You are not authorized to view unverified records for this session",
+        });
     }
 
     const unverifiedList = await service.getUnverifiedRecords(sessionId);
     return res.status(200).json(unverifiedList);
   } catch (error: any) {
-    return res.status(500).json({ message: "Failed to fetch unverified records", error: error.message });
+    return res
+      .status(500)
+      .json({
+        message: "Failed to fetch unverified records",
+        error: error.message,
+      });
   }
 };
 
@@ -170,18 +231,24 @@ const verifyUnverified = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || user.role !== "lecturer") {
-      return res.status(403).json({ message: "Only lecturers can verify attendance records" });
+      return res
+        .status(403)
+        .json({ message: "Only lecturers can verify attendance records" });
     }
 
     const sessionId = req.params.sessionId as string;
     const { studentIds, status } = req.body;
 
     if (!Array.isArray(studentIds) || !status) {
-      return res.status(400).json({ message: "studentIds (array) and status are required" });
+      return res
+        .status(400)
+        .json({ message: "studentIds (array) and status are required" });
     }
 
     if (status !== "present" && status !== "late") {
-      return res.status(400).json({ message: "Status must be 'present' or 'late'" });
+      return res
+        .status(400)
+        .json({ message: "Status must be 'present' or 'late'" });
     }
 
     const session = await sessionService.getById(sessionId);
@@ -191,13 +258,29 @@ const verifyUnverified = async (req: Request, res: Response) => {
 
     const lecturer = await lecturerService.findByUserId(user.id);
     if (!lecturer || session.lecturerId !== lecturer.id) {
-      return res.status(403).json({ message: "You are not authorized to verify records for this session" });
+      return res
+        .status(403)
+        .json({
+          message: "You are not authorized to verify records for this session",
+        });
     }
 
-    const updated = await service.verifyRecords(sessionId, studentIds, status, user.id);
-    return res.status(200).json({ message: "Records verified successfully", count: updated.length });
+    const updated = await service.verifyRecords(
+      sessionId,
+      studentIds,
+      status,
+      user.id,
+    );
+    return res
+      .status(200)
+      .json({
+        message: "Records verified successfully",
+        count: updated.length,
+      });
   } catch (error: any) {
-    return res.status(500).json({ message: "Failed to verify records", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Failed to verify records", error: error.message });
   }
 };
 

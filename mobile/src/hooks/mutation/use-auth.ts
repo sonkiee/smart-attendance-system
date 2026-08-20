@@ -1,17 +1,26 @@
-import { clockin, signin } from "@/service";
+import { clockin, lecturerSignin, studentSignin } from "@/service";
 import { useAuthStore } from "@/store";
 import { useMutation } from "@tanstack/react-query";
 
-export const useSignin = () => {
+export const useStudentSignin = () => {
   return useMutation({
-    mutationFn: signin,
+    mutationFn: studentSignin,
     onSuccess: (data) => {
-      // Handle successful signin, e.g., store token, redirect, etc.
-      console.log("Signin successful:", data);
-      useAuthStore.getState().setToken(data.token);
+      useAuthStore.getState().setAuth(data.token, { role: "student" });
     },
     onError: (error) => {
-      // Handle signin error, e.g., show error message
+      console.error("Signin failed:", error);
+    },
+  });
+};
+
+export const useLecturerSignin = () => {
+  return useMutation({
+    mutationFn: lecturerSignin,
+    onSuccess: (data) => {
+      useAuthStore.getState().setAuth(data.token, { role: "admin" });
+    },
+    onError: (error) => {
       console.error("Signin failed:", error);
     },
   });

@@ -137,7 +137,7 @@ export default function ToSubmit() {
         longitude,
         bleVerified: false,
         deviceId: "device-id-placeholder",
-        attendanceCode: "123456", // dummy attendance code
+        attendanceCode: session.attendanceCode, // dummy attendance code
       },
       {
         onSuccess: () => {
@@ -167,7 +167,7 @@ export default function ToSubmit() {
       <Stack.Screen
         options={{
           headerShown: false,
-          sheetAllowedDetents: state === "pin-fallback" ? [0.9] : [0.5],
+          sheetAllowedDetents: state === "pin-fallback" ? [0.9] : [0.6],
         }}
       />
       <View style={styles.container}>

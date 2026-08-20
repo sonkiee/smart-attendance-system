@@ -106,6 +106,36 @@ const getActiveSessionsForStudent = async (studentId: string) => {
     .where(eq(attendanceSessions.status, "active"));
 };
 
+const getActiveSessionsForLecturer = async (lecturerId: string) => {
+  return await db
+    .select({
+      id: attendanceSessions.id,
+      courseId: attendanceSessions.courseId,
+      courseCode: courses.courseCode,
+      courseTitle: courses.courseTitle,
+      lecturerId: attendanceSessions.lecturerId,
+      venueId: attendanceSessions.venueId,
+      sessionDate: attendanceSessions.sessionDate,
+      startTime: attendanceSessions.startTime,
+      endTime: attendanceSessions.endTime,
+      attendanceCode: attendanceSessions.attendanceCode,
+      status: attendanceSessions.status,
+      allowRepMarking: attendanceSessions.allowRepMarking,
+      lateThresholdMinutes: attendanceSessions.lateThresholdMinutes,
+      venueName: venues.name,
+      createdAt: attendanceSessions.createdAt,
+    })
+    .from(attendanceSessions)
+    .innerJoin(courses, eq(attendanceSessions.courseId, courses.id))
+    .leftJoin(venues, eq(attendanceSessions.venueId, venues.id))
+    .where(
+      and(
+        eq(attendanceSessions.lecturerId, lecturerId),
+        eq(attendanceSessions.status, "active"),
+      ),
+    );
+};
+
 const updateStatus = async (
   id: string,
   status: "active" | "completed" | "cancelled",
@@ -178,6 +208,7 @@ export {
   getAll,
   getById,
   getActiveSessionsForStudent,
+  getActiveSessionsForLecturer,
   updateStatus,
   update,
 };
