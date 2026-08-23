@@ -1,7 +1,9 @@
 import {
   fetchHistory,
   fetchSessionById,
+  fetchSessionByIdStudent,
   fetchSessions,
+  fetchSessionsLecturer,
   prefetchUser,
 } from "@/service";
 import { useAuthStore } from "@/store";
@@ -28,10 +30,28 @@ export const useFetchSessions = () => {
   });
 };
 
+export const useFetchSessionsLecturer = () => {
+  return useQuery({
+    queryKey: ["sessions", "lecturer"],
+    queryFn: fetchSessionsLecturer,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
+
 export const useSessionById = (sessionId: string) => {
   return useQuery({
     queryKey: ["sessions", sessionId],
     queryFn: () => fetchSessionById(sessionId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
+
+export const useSessionByIdStudent = (sessionId: string) => {
+  return useQuery({
+    queryKey: ["sessions", sessionId],
+    queryFn: () => fetchSessionByIdStudent(sessionId),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

@@ -1,9 +1,26 @@
 import { Theme } from "@/constants/theme";
+import { useSessionStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export const ActiveSessionCard = () => {
+export const ActiveSessionCard = ({
+  activeSession,
+  isPending,
+}: {
+  activeSession: any;
+  isPending: boolean;
+}) => {
+  // fetch active session data using the sessionId
+  // For demonstration purposes, we'll use mock data
+
+  const { endActiveSession } = useSessionStore();
+  console.log("ActiveSessionCard - Active Session Data:", activeSession?.id);
+
+  if (isPending) {
+    return <Text>Loading...</Text>;
+  }
+
   return (
     <View style={styles.section}>
       <Text style={[styles.sectionTitle, Theme.typography.headlineMd]}>
@@ -49,7 +66,7 @@ export const ActiveSessionCard = () => {
           </View>
 
           <Text style={[styles.venueText, Theme.typography.labelMd]}>
-            {activeSession.venue}
+            {activeSession.venueName}
           </Text>
         </View>
 
@@ -66,7 +83,7 @@ export const ActiveSessionCard = () => {
               <Ionicons name="resize" size={16} color={Theme.colors.primary} />
             </View>
             <Text style={[styles.detailText, Theme.typography.caption]}>
-              Radius: {activeSession.radius}m
+              Radius: {activeSession.radius ?? 0}m
             </Text>
           </View>
           <View style={styles.detailItem}>
@@ -78,7 +95,7 @@ export const ActiveSessionCard = () => {
               />
             </View>
             <Text style={[styles.detailText, Theme.typography.caption]}>
-              Duration: {activeSession.duration}m
+              Duration: {activeSession.duration ?? 0}m
             </Text>
           </View>
         </View>

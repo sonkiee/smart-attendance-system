@@ -55,8 +55,8 @@ const markSelf = async (data: {
     .where(
       and(
         eq(courseEnrollments.courseId, session.courseId),
-        eq(courseEnrollments.studentId, data.studentId)
-      )
+        eq(courseEnrollments.studentId, data.studentId),
+      ),
     )
     .limit(1);
 
@@ -71,15 +71,14 @@ const markSelf = async (data: {
     .where(
       and(
         eq(attendanceRecords.sessionId, data.sessionId),
-        eq(attendanceRecords.studentId, data.studentId)
-      )
+        eq(attendanceRecords.studentId, data.studentId),
+      ),
     )
     .limit(1);
 
   if (existingRecord) {
     throw new Error("You have already marked attendance for this session");
   }
-
 
   // 4. Verify and Tie Device ID
   const [studentProfile] = await db
@@ -116,12 +115,17 @@ const markSelf = async (data: {
 
   if (data.bleVerified) {
     locationVerified = true;
-  } else if (data.latitude !== undefined && data.longitude !== undefined && session.venueLatitude !== null && session.venueLongitude !== null) {
+  } else if (
+    data.latitude !== undefined &&
+    data.longitude !== undefined &&
+    session.venueLatitude !== null &&
+    session.venueLongitude !== null
+  ) {
     distanceMeters = getDistanceMeters(
       data.latitude,
       data.longitude,
       session.venueLatitude,
-      session.venueLongitude
+      session.venueLongitude,
     );
     locationVerified = distanceMeters <= (session.venueRadius || 50);
   } else {
@@ -143,9 +147,11 @@ const markSelf = async (data: {
       now.getDate(),
       startHour,
       startMin,
-      0
+      0,
     );
-    const lateLimitTime = new Date(startTimeToday.getTime() + session.lateThresholdMinutes * 60 * 1000);
+    const lateLimitTime = new Date(
+      startTimeToday.getTime() + session.lateThresholdMinutes * 60 * 1000,
+    );
 
     if (now > lateLimitTime) {
       status = "late";
@@ -230,8 +236,8 @@ const getHistoryForStudent = async (studentId: string) => {
       attendanceRecords,
       and(
         eq(attendanceSessions.id, attendanceRecords.sessionId),
-        eq(attendanceRecords.studentId, studentId)
-      )
+        eq(attendanceRecords.studentId, studentId),
+      ),
     )
     .where(eq(courseEnrollments.studentId, studentId));
 };
@@ -255,7 +261,10 @@ const getHistoryForLecturer = async (lecturerId: string) => {
     })
     .from(attendanceSessions)
     .innerJoin(courses, eq(attendanceSessions.courseId, courses.id))
-    .leftJoin(attendanceRecords, eq(attendanceSessions.id, attendanceRecords.sessionId))
+    .leftJoin(
+      attendanceRecords,
+      eq(attendanceSessions.id, attendanceRecords.sessionId),
+    )
     .where(eq(attendanceSessions.lecturerId, lecturerId))
     .groupBy(attendanceSessions.id, courses.id);
 };
@@ -277,12 +286,32 @@ const getUnverifiedRecords = async (sessionId: string) => {
     .where(
       and(
         eq(attendanceRecords.sessionId, sessionId),
-        eq(attendanceRecords.status, "unverified")
-      )
+        eq(attendanceRecords.status, "unverified"),
+      ),
     );
 };
 
-const verifyRecords = async (sessionId: string, studentIds: string[], status: "present" | "late", verifiedById: string) => {
+const getMarkedStudentsOnly = async (sessionId: string) => {
+  return await db
+    .select({
+      studentId: students.id,
+      matricNumber: students.matricNumber,
+      firstName: students.firstName,
+      lastName: students.lastName,
+      status: attendanceRecords.status,
+      markedAt: attendanceRecords.markedAt,
+    })
+    .from(attendanceRecords)
+    .innerJoin(students, eq(attendanceRecords.studentId, students.id))
+    .where(eq(attendanceRecords.sessionId, sessionId));
+};
+
+const verifyRecords = async (
+  sessionId: string,
+  studentIds: string[],
+  status: "present" | "late",
+  verifiedById: string,
+) => {
   return await db
     .update(attendanceRecords)
     .set({
@@ -295,8 +324,8 @@ const verifyRecords = async (sessionId: string, studentIds: string[], status: "p
     .where(
       and(
         eq(attendanceRecords.sessionId, sessionId),
-        inArray(attendanceRecords.studentId, studentIds)
-      )
+        inArray(attendanceRecords.studentId, studentIds),
+      ),
     )
     .returning();
 };
@@ -308,4 +337,5 @@ export {
   getHistoryForLecturer,
   getUnverifiedRecords,
   verifyRecords,
+  getMarkedStudentsOnly,
 };

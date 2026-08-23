@@ -1,9 +1,10 @@
 import { Theme } from "@/constants/theme";
-import { useSessionStore } from "@/store/session-store";
+import { useFetchHistory } from "@/hooks/queries/user";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
+  ActivityIndicator,
   FlatList,
   SafeAreaView,
   StatusBar,
@@ -15,18 +16,32 @@ import {
 
 export default function LecturerHistory() {
   const router = useRouter();
-  const { pastSessions, studentsBySession } = useSessionStore();
+  const { data: historySessions, isPending } = useFetchHistory();
 
-  const getAttendanceSummary = (sessionId: string) => {
-    const students = studentsBySession[sessionId] || [];
-    const presentCount = students.filter((s) => s.status === "present").length;
-    return `${presentCount}/${students.length} Present`;
+  const getAttendanceSummary = (item: any) => {
+    const present = (item.presentCount || 0) + (item.lateCount || 0);
+    const total =
+      present + (item.unverifiedCount || 0) + (item.absentCount || 0);
+    return `${present}/${total} Present`;
   };
 
   const formatDate = (isoString: string) => {
     const d = new Date(isoString);
     if (isNaN(d.getTime())) return isoString;
-    const monthsShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthsShort = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     const month = monthsShort[d.getMonth()];
     const day = d.getDate();
     let hours = d.getHours();
@@ -37,6 +52,25 @@ export default function LecturerHistory() {
     const minStr = minutes < 10 ? `0${minutes}` : minutes;
     return `${month} ${day} • ${hours}:${minStr} ${ampm}`;
   };
+
+  if (isPending) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={Theme.colors.background}
+        />
+        <View style={styles.header}>
+          <Text style={[styles.headerTitle, Theme.typography.headlineMd]}>
+            Past Sessions
+          </Text>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Theme.colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -52,8 +86,8 @@ export default function LecturerHistory() {
       </View>
 
       <FlatList
-        data={pastSessions}
-        keyExtractor={(item) => item.id}
+        data={historySessions}
+        keyExtractor={(item) => item.sessionId || item.id}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
@@ -63,7 +97,7 @@ export default function LecturerHistory() {
             onPress={() =>
               router.push({
                 pathname: "/(lecturer)/session/[id]",
-                params: { id: item.id },
+                params: { id: item.sessionId || item.id },
               })
             }
           >
@@ -73,7 +107,11 @@ export default function LecturerHistory() {
             <View style={styles.cardHeader}>
               <View style={styles.courseWrapper}>
                 <View style={styles.courseIconWrapper}>
-                  <Ionicons name="journal-outline" size={16} color={Theme.colors.primary} />
+                  <Ionicons
+                    name="journal-outline"
+                    size={16}
+                    color={Theme.colors.primary}
+                  />
                 </View>
                 <Text style={[styles.courseCode, Theme.typography.bodyLg]}>
                   {item.courseCode}
@@ -81,11 +119,15 @@ export default function LecturerHistory() {
               </View>
               <View style={styles.badgesWrapper}>
                 <Text style={[styles.summaryText, Theme.typography.labelMd]}>
-                  {getAttendanceSummary(item.id)}
+                  {getAttendanceSummary(item)}
                 </Text>
-                {item.courseRepEnabled && (
+                {item.allowRepMarking && (
                   <View style={styles.repBadge}>
-                    <Ionicons name="people" size={10} color={Theme.colors.primary} />
+                    <Ionicons
+                      name="people"
+                      size={10}
+                      color={Theme.colors.primary}
+                    />
                     <Text style={styles.repBadgeText}>REP</Text>
                   </View>
                 )}
@@ -98,15 +140,23 @@ export default function LecturerHistory() {
 
             <View style={styles.cardFooter}>
               <View style={styles.metaRow}>
-                <Ionicons name="location-outline" size={14} color={Theme.colors.outline} />
+                <Ionicons
+                  name="location-outline"
+                  size={14}
+                  color={Theme.colors.outline}
+                />
                 <Text style={[styles.metaText, Theme.typography.caption]}>
-                  {item.venue}
+                  {item.venueName || item.venue || "Unknown Venue"}
                 </Text>
               </View>
               <View style={styles.metaRow}>
-                <Ionicons name="calendar-outline" size={14} color={Theme.colors.outline} />
+                <Ionicons
+                  name="calendar-outline"
+                  size={14}
+                  color={Theme.colors.outline}
+                />
                 <Text style={[styles.metaText, Theme.typography.caption]}>
-                  {formatDate(item.createdAt)}
+                  {formatDate(`${item.sessionDate}T${item.startTime}`)}
                 </Text>
               </View>
             </View>
@@ -114,7 +164,11 @@ export default function LecturerHistory() {
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="archive-outline" size={48} color={Theme.colors.outlineVariant} />
+            <Ionicons
+              name="archive-outline"
+              size={48}
+              color={Theme.colors.outlineVariant}
+            />
             <Text style={[styles.emptyText, Theme.typography.bodyMd]}>
               No past sessions found.
             </Text>
@@ -250,5 +304,10 @@ const styles = StyleSheet.create({
   emptyText: {
     color: Theme.colors.outline,
     fontWeight: "600",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

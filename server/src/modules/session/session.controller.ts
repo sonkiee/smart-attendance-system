@@ -2,23 +2,37 @@ import { Request, Response } from "express";
 import * as service from "./session.service";
 import * as lecturerService from "../lecturer/lecturer.service";
 import * as studentService from "../student/student.service";
+import * as courseService from "../course/course.service";
+import * as attendanceService from "../attendance/attendance.service";
 
 const create = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || user.role !== "lecturer") {
-      return res.status(403).json({ message: "Only lecturers can create sessions" });
+      return res
+        .status(403)
+        .json({ message: "Only lecturers can create sessions" });
     }
 
-    const { courseId, venueId, durationMinutes, lateThresholdMinutes, allowRepMarking } = req.body;
+    const {
+      courseId,
+      venueId,
+      durationMinutes,
+      lateThresholdMinutes,
+      allowRepMarking,
+    } = req.body;
 
     if (!courseId || !durationMinutes) {
-      return res.status(400).json({ message: "courseId and durationMinutes are required" });
+      return res
+        .status(400)
+        .json({ message: "courseId and durationMinutes are required" });
     }
 
     const lecturer = await lecturerService.findByUserId(user.id);
     if (!lecturer) {
-      return res.status(403).json({ message: "Lecturer profile not found for user" });
+      return res
+        .status(403)
+        .json({ message: "Lecturer profile not found for user" });
     }
 
     // Generate 4-digit code
@@ -41,12 +55,15 @@ const create = async (req: Request, res: Response) => {
       attendanceCode,
       status: "active",
       allowRepMarking: allowRepMarking || false,
-      lateThresholdMinutes: lateThresholdMinutes !== undefined ? Number(lateThresholdMinutes) : 15,
+      lateThresholdMinutes:
+        lateThresholdMinutes !== undefined ? Number(lateThresholdMinutes) : 15,
     });
 
     return res.status(201).json(session);
   } catch (error: any) {
-    return res.status(500).json({ message: "Failed to create session", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Failed to create session", error: error.message });
   }
 };
 
@@ -54,45 +71,57 @@ const getActiveForStudent = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || user.role !== "student") {
-      return res.status(403).json({ message: "Only students can view active sessions" });
+      return res
+        .status(403)
+        .json({ message: "Only students can view active sessions" });
     }
 
     const student = await studentService.findByUserId(user.id);
     if (!student) {
-      return res.status(403).json({ message: "Student profile not found for user" });
+      return res
+        .status(403)
+        .json({ message: "Student profile not found for user" });
     }
 
-    const sessions = await service.getActiveSessionsForStudent(student.student.id);
+    const sessions = await service.getActiveSessionsForStudent(
+      student.student.id,
+    );
     return res.status(200).json(sessions);
   } catch (error: any) {
-    return res.status(500).json({ message: "Failed to fetch active sessions", error: error.message });
+    return res.status(500).json({
+      message: "Failed to fetch active sessions",
+      error: error.message,
+    });
   }
 };
 
 const getActiveForLecturer = async (req: Request, res: Response) => {
-  try {
-    const user = (req as any).user;
-    if (!user || user.role !== "lecturer") {
-      return res.status(403).json({ message: "Only lecturers can view active sessions" });
-    }
-
-    const lecturer = await lecturerService.findByUserId(user.id);
-    if (!lecturer) {
-      return res.status(403).json({ message: "Lecturer profile not found for user" });
-    }
-
-    const sessions = await service.getActiveSessionsForLecturer(lecturer.id);
-    return res.status(200).json(sessions);
-  } catch (error: any) {
-    return res.status(500).json({ message: "Failed to fetch active sessions", error: error.message });
+  const user = (req as any).user;
+  if (!user || user.role !== "lecturer") {
+    return res
+      .status(403)
+      .json({ message: "Only lecturers can view active sessions" });
   }
+
+  const lecturer = await lecturerService.findByUserId(user.id);
+  if (!lecturer) {
+    return res
+      .status(403)
+      .json({ message: "Lecturer profile not found for user" });
+  }
+
+  const sessions = await service.getActiveSessionsForLecturer(lecturer.id);
+  // const student = await courseService.getCourseStudents();
+  return res.status(200).json(sessions);
 };
 
 const closeSession = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || user.role !== "lecturer") {
-      return res.status(403).json({ message: "Only lecturers can close sessions" });
+      return res
+        .status(403)
+        .json({ message: "Only lecturers can close sessions" });
     }
 
     const id = req.params.id as string;
@@ -103,13 +132,20 @@ const closeSession = async (req: Request, res: Response) => {
 
     const lecturer = await lecturerService.findByUserId(user.id);
     if (!lecturer || session.lecturerId !== lecturer.id) {
-      return res.status(403).json({ message: "You are not authorized to close this session" });
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to close this session" });
     }
 
     const updated = await service.updateStatus(id, "completed");
-    return res.status(200).json({ message: "Session closed and absent students marked", session: updated });
+    return res.status(200).json({
+      message: "Session closed and absent students marked",
+      session: updated,
+    });
   } catch (error: any) {
-    return res.status(500).json({ message: "Failed to close session", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Failed to close session", error: error.message });
   }
 };
 
@@ -117,7 +153,9 @@ const toggleRepMarking = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || user.role !== "lecturer") {
-      return res.status(403).json({ message: "Only lecturers can modify delegation settings" });
+      return res
+        .status(403)
+        .json({ message: "Only lecturers can modify delegation settings" });
     }
 
     const id = req.params.id as string;
@@ -134,13 +172,21 @@ const toggleRepMarking = async (req: Request, res: Response) => {
 
     const lecturer = await lecturerService.findByUserId(user.id);
     if (!lecturer || session.lecturerId !== lecturer.id) {
-      return res.status(403).json({ message: "You are not authorized to modify this session" });
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to modify this session" });
     }
 
-    const updated = await service.update(id, { allowRepMarking: !!allowRepMarking });
-    return res.status(200).json({ message: "Rep marking setting updated", session: updated });
+    const updated = await service.update(id, {
+      allowRepMarking: !!allowRepMarking,
+    });
+    return res
+      .status(200)
+      .json({ message: "Rep marking setting updated", session: updated });
   } catch (error: any) {
-    return res.status(500).json({ message: "Failed to toggle rep marking", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Failed to toggle rep marking", error: error.message });
   }
 };
 
@@ -153,8 +199,35 @@ const getById = async (req: Request, res: Response) => {
     }
     return res.status(200).json(session);
   } catch (error: any) {
-    return res.status(500).json({ message: "Failed to fetch session details", error: error.message });
+    return res.status(500).json({
+      message: "Failed to fetch session details",
+      error: error.message,
+    });
   }
 };
 
-export { create, getActiveForStudent, getActiveForLecturer, closeSession, toggleRepMarking, getById };
+const getByIdWithStudents = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const session = await service.getByIdWithStudents(id);
+    if (!session) {
+      return res.status(404).json({ message: "Session not found" });
+    }
+    return res.status(200).json(session);
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Failed to fetch session details",
+      error: error.message,
+    });
+  }
+};
+
+export {
+  create,
+  getActiveForStudent,
+  getActiveForLecturer,
+  closeSession,
+  toggleRepMarking,
+  getById,
+  getByIdWithStudents,
+};

@@ -1,10 +1,12 @@
+import { ActiveSessionCard } from "@/components/lecturer/active-session-card";
+import { NoSession } from "@/components/lecturer/no-session";
 import { Theme } from "@/constants/theme";
+import { useFetchSessionsLecturer } from "@/hooks/queries/user";
 import { useAuthStore } from "@/store/auth-store";
 import { useSessionStore } from "@/store/session-store";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -12,11 +14,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LecturerHome() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
-  const { activeSession, endActiveSession } = useSessionStore();
+  const { endActiveSession } = useSessionStore();
+  const { data, isPending } = useFetchSessionsLecturer();
+
+  const activeSession = data?.[0];
 
   const handleLogout = () => {
     logout();
@@ -63,145 +69,12 @@ export default function LecturerHome() {
         showsVerticalScrollIndicator={false}
       >
         {activeSession ? (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, Theme.typography.headlineMd]}>
-              Active Session
-            </Text>
-
-            <TouchableOpacity
-              style={[styles.sessionCard, Theme.shadows.soft]}
-              activeOpacity={0.85}
-              onPress={() =>
-                router.push({
-                  pathname: "/(lecturer)/session/[id]",
-                  params: { id: activeSession.id },
-                })
-              }
-            >
-              {/* Decorative Circle from student side cards */}
-              <View style={styles.cardDecorativeCircle} />
-
-              <View style={styles.cardHeader}>
-                <View style={styles.badgesWrapper}>
-                  {/* LIVE Badge */}
-                  <View style={styles.activeBadge}>
-                    <View style={styles.badgeDot} />
-                    <Text style={[styles.badgeText, Theme.typography.labelMd]}>
-                      LIVE
-                    </Text>
-                  </View>
-
-                  {/* Course Rep Permission indicator */}
-                  {activeSession.courseRepEnabled && (
-                    <View style={styles.repBadge}>
-                      <Ionicons
-                        name="people"
-                        size={10}
-                        color={Theme.colors.primary}
-                      />
-                      <Text
-                        style={[styles.repBadgeText, Theme.typography.labelMd]}
-                      >
-                        REP
-                      </Text>
-                    </View>
-                  )}
-                </View>
-
-                <Text style={[styles.venueText, Theme.typography.labelMd]}>
-                  {activeSession.venue}
-                </Text>
-              </View>
-
-              <Text style={[styles.courseCode, Theme.typography.headlineLg]}>
-                {activeSession.courseCode}
-              </Text>
-              <Text style={[styles.courseTitle, Theme.typography.bodyLg]}>
-                {activeSession.courseTitle}
-              </Text>
-
-              <View style={styles.cardDetails}>
-                <View style={styles.detailItem}>
-                  <View style={styles.iconWrapper}>
-                    <Ionicons
-                      name="resize"
-                      size={16}
-                      color={Theme.colors.primary}
-                    />
-                  </View>
-                  <Text style={[styles.detailText, Theme.typography.caption]}>
-                    Radius: {activeSession.radius}m
-                  </Text>
-                </View>
-                <View style={styles.detailItem}>
-                  <View style={styles.iconWrapper}>
-                    <Ionicons
-                      name="time-outline"
-                      size={16}
-                      color={Theme.colors.primary}
-                    />
-                  </View>
-                  <Text style={[styles.detailText, Theme.typography.caption]}>
-                    Duration: {activeSession.duration}m
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.cardFooter}>
-                <Text style={styles.tapPrompt}>
-                  Tap to view Roll Call & Details
-                </Text>
-                <Ionicons
-                  name="arrow-forward"
-                  size={16}
-                  color={Theme.colors.primary}
-                />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.endBtn}
-              onPress={endActiveSession}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.endBtnText}>End Attendance Session</Text>
-            </TouchableOpacity>
-          </View>
+          <ActiveSessionCard
+            isPending={isPending}
+            activeSession={activeSession}
+          />
         ) : (
-          <View style={styles.emptyContainer}>
-            <View style={[styles.emptyCard, Theme.shadows.soft]}>
-              <View style={styles.cardDecorativeCircle} />
-
-              <View style={styles.illustrationBox}>
-                <View style={styles.innerPulseCircle} />
-                <Ionicons
-                  name="cellular"
-                  size={56}
-                  color={Theme.colors.primary}
-                />
-              </View>
-              <Text style={[styles.emptyHeadline, Theme.typography.headlineMd]}>
-                Start a Class Session
-              </Text>
-              <Text style={[styles.emptySubheadline, Theme.typography.bodyMd]}>
-                Initiate a geofenced attendance gateway to automatically verify
-                and record students inside your classroom.
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              style={styles.createBtn}
-              onPress={() => router.push("/(lecturer)/create-session")}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="add-circle"
-                size={24}
-                color={Theme.colors.onPrimary}
-              />
-              <Text style={styles.createBtnText}>Create New Session</Text>
-            </TouchableOpacity>
-          </View>
+          <NoSession />
         )}
       </ScrollView>
     </SafeAreaView>

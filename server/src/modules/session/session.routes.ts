@@ -6,33 +6,39 @@ import { methodNotAllowed } from "../../middlewares/methodNotAllowed.middleware.
 const router = express.Router();
 
 // Get active sessions for a student
-router.route("/active")
+router
+  .route("/active")
   .get(shield, controller.getActiveForStudent)
   .all(methodNotAllowed);
 
 // Get active sessions for a lecturer
-router.route("/active/lecturer")
+router
+  .route("/active/lecturer")
   .get(shield, controller.getActiveForLecturer)
   .all(methodNotAllowed);
 
 // Create a session
-router.route("/")
-  .post(shield, controller.create)
-  .all(methodNotAllowed);
+router.route("/").post(shield, controller.create).all(methodNotAllowed);
 
 // Close a session
-router.route("/:id/close")
+router
+  .route("/:id/close")
   .post(shield, controller.closeSession)
   .all(methodNotAllowed);
 
 // Toggle Course Rep delegation
-router.route("/:id/toggle-rep-marking")
+router
+  .route("/:id/toggle-rep-marking")
   .post(shield, controller.toggleRepMarking)
   .all(methodNotAllowed);
 
 // Get session by ID
-router.route("/:id")
-  .get(shield, controller.getById)
+router.route("/:id").get(shield, controller.getById).all(methodNotAllowed);
+
+// Get session by ID with students
+router
+  .route("/:id/students")
+  .all(shield, controller.getByIdWithStudents)
   .all(methodNotAllowed);
 
 export default router;

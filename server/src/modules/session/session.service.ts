@@ -6,8 +6,9 @@ import {
   NewAttendanceSession,
   venues,
   courses,
+  students,
 } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 const create = async (data: NewAttendanceSession) => {
   const [session] = await db
@@ -73,6 +74,69 @@ const getById = async (id: string) => {
     .where(eq(attendanceSessions.id, id))
     .limit(1);
   return session || null;
+};
+
+const getByIdWithStudents = async (id: string) => {
+  const [session] = await db
+    .select({
+      id: attendanceSessions.id,
+      courseId: attendanceSessions.courseId,
+      courseCode: courses.courseCode,
+      courseTitle: courses.courseTitle,
+      lecturerId: attendanceSessions.lecturerId,
+      venueId: attendanceSessions.venueId,
+      venue: {
+        id: venues.id,
+        name: venues.name,
+        latitude: venues.latitude,
+        longitude: venues.longitude,
+        radius: venues.radiusMeters,
+      },
+      sessionDate: attendanceSessions.sessionDate,
+      startTime: attendanceSessions.startTime,
+      endTime: attendanceSessions.endTime,
+      attendanceCode: attendanceSessions.attendanceCode,
+      status: attendanceSessions.status,
+      allowRepMarking: attendanceSessions.allowRepMarking,
+      lateThresholdMinutes: attendanceSessions.lateThresholdMinutes,
+      createdAt: attendanceSessions.createdAt,
+      venueName: venues.name,
+    })
+    .from(attendanceSessions)
+    .innerJoin(courses, eq(attendanceSessions.courseId, courses.id))
+    .leftJoin(venues, eq(attendanceSessions.venueId, venues.id))
+    .where(eq(attendanceSessions.id, id))
+    .limit(1);
+
+  if (!session) return null;
+
+  const studentList = await db
+    .select({
+      id: students.id,
+      matricNumber: students.matricNumber,
+      firstName: students.firstName,
+      lastName: students.lastName,
+      department: students.department,
+      level: students.level,
+      attendanceStatus: sql<string>`COALESCE(${attendanceRecords.status}, 'absent')`,
+      markedAt: attendanceRecords.markedAt,
+      isManual: attendanceRecords.isManual,
+    })
+    .from(courseEnrollments)
+    .innerJoin(students, eq(courseEnrollments.studentId, students.id))
+    .leftJoin(
+      attendanceRecords,
+      and(
+        eq(attendanceRecords.studentId, students.id),
+        eq(attendanceRecords.sessionId, id),
+      ),
+    )
+    .where(eq(courseEnrollments.courseId, session.courseId));
+
+  return {
+    ...session,
+    students: studentList,
+  };
 };
 
 const getActiveSessionsForStudent = async (studentId: string) => {
@@ -211,4 +275,5 @@ export {
   getActiveSessionsForLecturer,
   updateStatus,
   update,
+  getByIdWithStudents,
 };

@@ -47,6 +47,21 @@ export const fetchSessions = async (): Promise<any> => {
   return api.get("/sessions/active");
 };
 
+export const fetchSessionsLecturer = async (): Promise<any> => {
+  return api.get("/sessions/active/lecturer");
+};
+
 export const fetchSessionById = async (sessionId: string): Promise<any> => {
   return api.get(`/sessions/${sessionId}`);
 };
+
+export const fetchSessionByIdStudent = async (
+  sessionId: string,
+): Promise<any> => {
+  return api.get(`/sessions/${sessionId}/students`);
+};
+
+export const closeSession = async (sessionId: string): Promise<any> => {
+  return api.post(`/sessions/${sessionId}/close`);
+};
+
