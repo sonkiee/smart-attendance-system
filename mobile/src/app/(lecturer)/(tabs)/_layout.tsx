@@ -24,7 +24,7 @@ export default function LecturerTabsLayout() {
             <MaterialCommunityIcons
               name={focused ? "home-variant" : "home-variant-outline"}
               size={24}
-              color={color}
+              color={typeof color === "string" ? color : undefined}
             />
           ),
         }}
@@ -34,7 +34,11 @@ export default function LecturerTabsLayout() {
         options={{
           title: "History",
           tabBarIcon: ({ color, focused }) => (
-            <MaterialCommunityIcons name="history" size={24} color={color} />
+            <MaterialCommunityIcons
+              name="history"
+              size={24}
+              color={typeof color === "string" ? color : undefined}
+            />
           ),
         }}
       />
@@ -46,7 +50,7 @@ export default function LecturerTabsLayout() {
             <MaterialCommunityIcons
               name={focused ? "account" : "account-outline"}
               size={24}
-              color={color}
+              color={typeof color === "string" ? color : undefined}
             />
           ),
         }}

@@ -57,10 +57,7 @@ export default function SetPasswordScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={Theme.colors.background}
-      />
+      <StatusBar barStyle="dark-content" />
 
       {/* Decorative Atmospheric Background Circles */}
       <View style={styles.backgroundDecor} pointerEvents="none">

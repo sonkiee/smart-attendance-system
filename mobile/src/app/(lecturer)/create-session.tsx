@@ -1,10 +1,15 @@
 import { Theme } from "@/constants/theme";
-import { useSessionStore } from "@/store/session-store";
+import { useStartSession } from "@/hooks/mutation/use-session";
+import { useCourses, useVenues } from "@/hooks/queries/user";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -12,58 +17,80 @@ import {
   StyleSheet,
   Switch,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
 export default function CreateSession() {
   const router = useRouter();
-  const createSession = useSessionStore((state) => state.createSession);
+  const { mutate: startSessionMutate, isPending } = useStartSession();
+  const { data: courses = [], isLoading: isLoadingCourses } = useCourses();
+  const { data: venues = [], isLoading: isLoadingVenues } = useVenues();
 
-  const [courseCode, setCourseCode] = useState("CSC 401");
-  const [courseTitle, setCourseTitle] = useState("Mobile App Development");
-  const [venue, setVenue] = useState("Computer Science Lab");
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [selectedVenue, setSelectedVenue] = useState<any>(null);
+
   const [radius, setRadius] = useState<number>(20);
   const [duration, setDuration] = useState<number>(15);
   const [courseRepEnabled, setCourseRepEnabled] = useState(false);
 
-  // Focus states to implement dynamic high-end borders
-  const [focusedField, setFocusedField] = useState<
-    "code" | "title" | "venue" | null
-  >(null);
+  const [courseModalVisible, setCourseModalVisible] = useState(false);
+  const [venueModalVisible, setVenueModalVisible] = useState(false);
 
-  // Form validation indicator
-  const isFormValid =
-    courseCode.trim() !== "" &&
-    courseTitle.trim() !== "" &&
-    venue.trim() !== "";
+  // Auto-select first available course when data loads
+  useEffect(() => {
+    if (!selectedCourse && courses && courses.length > 0) {
+      setSelectedCourse(courses[0]);
+    }
+  }, [courses]);
+
+  // Auto-select first available venue when data loads
+  useEffect(() => {
+    if (!selectedVenue && venues && venues.length > 0) {
+      setSelectedVenue(venues[0]);
+      if (venues[0].radiusMeters) {
+        setRadius(venues[0].radiusMeters);
+      }
+    }
+  }, [venues]);
+
+  const isFormValid = !!selectedCourse?.id && duration > 0;
 
   const handleStartSession = () => {
-    if (!isFormValid) return;
+    if (!selectedCourse?.id) {
+      Alert.alert(
+        "Selection Required",
+        "Please select a valid course to start an attendance session.",
+      );
+      return;
+    }
 
-    const session = createSession({
-      courseCode,
-      courseTitle,
-      venue,
-      radius,
-      duration,
-      courseRepEnabled,
-    });
-
-    // Navigate to active session details page immediately
-    router.replace({
-      pathname: "/(lecturer)/session/[id]",
-      params: { id: session.id },
-    });
+    startSessionMutate(
+      {
+        courseId: selectedCourse.id,
+        venueId: selectedVenue?.id || null,
+        durationMinutes: duration,
+        lateThresholdMinutes: 15,
+        allowRepMarking: courseRepEnabled,
+      },
+      {
+        onSuccess: (sessionData: any) => {
+          Alert.alert("Success", "Attendance session created successfully!");
+          router.replace({
+            pathname: "/(lecturer)/session/[id]",
+            params: { id: sessionData.id },
+          });
+        },
+        onError: (err: any) => {
+          Alert.alert("Error", err.message || "Failed to start session.");
+        },
+      },
+    );
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={Theme.colors.background}
-      />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
       <View style={styles.header}>
@@ -97,104 +124,139 @@ export default function CreateSession() {
           <View style={[styles.formCard, Theme.shadows.soft]}>
             <View style={styles.cardDecorativeCircle} />
 
-            {/* Course Code Field */}
+            {/* Course Selector */}
             <View style={styles.inputContainer}>
               <Text style={[styles.inputLabel, Theme.typography.labelMd]}>
-                COURSE CODE
+                COURSE
               </Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  focusedField === "code" && styles.inputWrapperFocused,
-                ]}
+              <TouchableOpacity
+                style={[styles.inputWrapper, styles.selectorWrapper]}
+                onPress={() => setCourseModalVisible(true)}
+                activeOpacity={0.7}
               >
                 <Ionicons
                   name="school-outline"
                   size={20}
-                  color={
-                    focusedField === "code"
-                      ? Theme.colors.primary
-                      : Theme.colors.outline
-                  }
+                  color={Theme.colors.primary}
                   style={styles.inputIcon}
                 />
-                <TextInput
-                  style={[styles.textInput, Theme.typography.bodyLg]}
-                  placeholder="e.g. CSC 401"
-                  placeholderTextColor={Theme.colors.outlineVariant}
-                  value={courseCode}
-                  onChangeText={setCourseCode}
-                  autoCapitalize="characters"
-                  onFocus={() => setFocusedField("code")}
-                  onBlur={() => setFocusedField(null)}
-                />
-              </View>
-            </View>
-
-            {/* Course Title Field */}
-            <View style={styles.inputContainer}>
-              <Text style={[styles.inputLabel, Theme.typography.labelMd]}>
-                COURSE TITLE
-              </Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  focusedField === "title" && styles.inputWrapperFocused,
-                ]}
-              >
+                <View style={{ flex: 1, justifyContent: "center" }}>
+                  {isLoadingCourses ? (
+                    <Text
+                      style={[
+                        styles.selectorPlaceholder,
+                        Theme.typography.bodyLg,
+                      ]}
+                    >
+                      Loading courses...
+                    </Text>
+                  ) : selectedCourse ? (
+                    <>
+                      <Text
+                        style={[
+                          styles.selectorMainText,
+                          Theme.typography.bodyLg,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {selectedCourse.courseCode} - {selectedCourse.courseTitle}
+                      </Text>
+                      {selectedCourse.department ? (
+                        <Text
+                          style={[
+                            styles.selectorSubText,
+                            Theme.typography.caption,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {selectedCourse.department} • Level{" "}
+                          {selectedCourse.level}
+                        </Text>
+                      ) : null}
+                    </>
+                  ) : (
+                    <Text
+                      style={[
+                        styles.selectorPlaceholder,
+                        Theme.typography.bodyLg,
+                      ]}
+                    >
+                      Select a Course
+                    </Text>
+                  )}
+                </View>
                 <Ionicons
-                  name="book-outline"
+                  name="chevron-down"
                   size={20}
-                  color={
-                    focusedField === "title"
-                      ? Theme.colors.primary
-                      : Theme.colors.outline
-                  }
-                  style={styles.inputIcon}
+                  color={Theme.colors.outline}
                 />
-                <TextInput
-                  style={[styles.textInput, Theme.typography.bodyLg]}
-                  placeholder="e.g. Mobile App Development"
-                  placeholderTextColor={Theme.colors.outlineVariant}
-                  value={courseTitle}
-                  onChangeText={setCourseTitle}
-                  onFocus={() => setFocusedField("title")}
-                  onBlur={() => setFocusedField(null)}
-                />
-              </View>
+              </TouchableOpacity>
             </View>
 
-            {/* Venue Field */}
+            {/* Venue Selector */}
             <View style={styles.inputContainer}>
               <Text style={[styles.inputLabel, Theme.typography.labelMd]}>
                 VENUE / ROOM
               </Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  focusedField === "venue" && styles.inputWrapperFocused,
-                ]}
+              <TouchableOpacity
+                style={[styles.inputWrapper, styles.selectorWrapper]}
+                onPress={() => setVenueModalVisible(true)}
+                activeOpacity={0.7}
               >
                 <Ionicons
                   name="location-outline"
                   size={20}
-                  color={
-                    focusedField === "venue"
-                      ? Theme.colors.primary
-                      : Theme.colors.outline
-                  }
+                  color={Theme.colors.primary}
                   style={styles.inputIcon}
                 />
-                <TextInput
-                  style={[styles.textInput, Theme.typography.bodyLg]}
-                  placeholder="e.g. Computer Science Lab"
-                  placeholderTextColor={Theme.colors.outlineVariant}
-                  value={venue}
-                  onChangeText={setVenue}
-                  onFocus={() => setFocusedField("venue")}
-                  onBlur={() => setFocusedField(null)}
+                <View style={{ flex: 1, justifyContent: "center" }}>
+                  {isLoadingVenues ? (
+                    <Text
+                      style={[
+                        styles.selectorPlaceholder,
+                        Theme.typography.bodyLg,
+                      ]}
+                    >
+                      Loading venues...
+                    </Text>
+                  ) : selectedVenue ? (
+                    <>
+                      <Text
+                        style={[
+                          styles.selectorMainText,
+                          Theme.typography.bodyLg,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {selectedVenue.name}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.selectorSubText,
+                          Theme.typography.caption,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        Default radius: {selectedVenue.radiusMeters ?? radius}m
+                      </Text>
+                    </>
+                  ) : (
+                    <Text
+                      style={[
+                        styles.selectorPlaceholder,
+                        Theme.typography.bodyLg,
+                      ]}
+                    >
+                      Select a Venue (Optional)
+                    </Text>
+                  )}
+                </View>
+                <Ionicons
+                  name="chevron-down"
+                  size={20}
+                  color={Theme.colors.outline}
                 />
-              </View>
+              </TouchableOpacity>
             </View>
 
             {/* Geofence Radius Selector */}
@@ -280,22 +342,195 @@ export default function CreateSession() {
             </View>
           </View>
 
-          {/* Action Button with validation state */}
+          {/* Action Button with validation and loading state */}
           <TouchableOpacity
-            style={[styles.startBtn, !isFormValid && styles.startBtnDisabled]}
+            style={[
+              styles.startBtn,
+              (!isFormValid || isPending) && styles.startBtnDisabled,
+            ]}
             onPress={handleStartSession}
-            disabled={!isFormValid}
+            disabled={!isFormValid || isPending}
             activeOpacity={0.8}
           >
-            <Ionicons
-              name="wifi-outline"
-              size={24}
-              color={Theme.colors.onPrimary}
-            />
-            <Text style={styles.startBtnText}>Start Attendance Session</Text>
+            {isPending ? (
+              <ActivityIndicator color={Theme.colors.onPrimary} />
+            ) : (
+              <>
+                <Ionicons
+                  name="wifi-outline"
+                  size={24}
+                  color={Theme.colors.onPrimary}
+                />
+                <Text style={styles.startBtnText}>Start Attendance Session</Text>
+              </>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Course Selection Modal */}
+      <Modal
+        visible={courseModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setCourseModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, Theme.typography.headlineMd]}>
+                Select Course
+              </Text>
+              <TouchableOpacity
+                onPress={() => setCourseModalVisible(false)}
+                style={styles.modalCloseBtn}
+              >
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color={Theme.colors.onSurface}
+                />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={courses}
+              keyExtractor={(item: any) => item.id}
+              contentContainerStyle={styles.modalListContent}
+              renderItem={({ item }: { item: any }) => {
+                const isSelected = selectedCourse?.id === item.id;
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.modalItem,
+                      isSelected && styles.modalItemSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedCourse(item);
+                      setCourseModalVisible(false);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={[
+                          styles.modalItemCode,
+                          isSelected && { color: Theme.colors.primary },
+                        ]}
+                      >
+                        {item.courseCode}
+                      </Text>
+                      <Text style={styles.modalItemTitle}>
+                        {item.courseTitle}
+                      </Text>
+                      {item.department ? (
+                        <Text style={styles.modalItemSub}>
+                          {item.department} • Level {item.level}
+                        </Text>
+                      ) : null}
+                    </View>
+                    {isSelected && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={22}
+                        color={Theme.colors.primary}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
+              ListEmptyComponent={
+                <View style={styles.modalEmpty}>
+                  <Text style={styles.modalEmptyText}>
+                    {isLoadingCourses
+                      ? "Loading courses..."
+                      : "No courses found."}
+                  </Text>
+                </View>
+              }
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Venue Selection Modal */}
+      <Modal
+        visible={venueModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setVenueModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, Theme.typography.headlineMd]}>
+                Select Venue
+              </Text>
+              <TouchableOpacity
+                onPress={() => setVenueModalVisible(false)}
+                style={styles.modalCloseBtn}
+              >
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color={Theme.colors.onSurface}
+                />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={venues}
+              keyExtractor={(item: any) => item.id}
+              contentContainerStyle={styles.modalListContent}
+              renderItem={({ item }: { item: any }) => {
+                const isSelected = selectedVenue?.id === item.id;
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.modalItem,
+                      isSelected && styles.modalItemSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedVenue(item);
+                      if (item.radiusMeters) {
+                        setRadius(item.radiusMeters);
+                      }
+                      setVenueModalVisible(false);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={[
+                          styles.modalItemCode,
+                          isSelected && { color: Theme.colors.primary },
+                        ]}
+                      >
+                        {item.name}
+                      </Text>
+                      <Text style={styles.modalItemSub}>
+                        Radius: {item.radiusMeters ?? 50}m
+                      </Text>
+                    </View>
+                    {isSelected && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={22}
+                        color={Theme.colors.primary}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
+              ListEmptyComponent={
+                <View style={styles.modalEmpty}>
+                  <Text style={styles.modalEmptyText}>
+                    {isLoadingVenues ? "Loading venues..." : "No venues found."}
+                  </Text>
+                </View>
+              }
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -370,19 +605,24 @@ const styles = StyleSheet.create({
     height: 56,
     zIndex: 2,
   },
-  inputWrapperFocused: {
-    borderColor: Theme.colors.primary,
-    borderWidth: 1.5,
-    backgroundColor: Theme.colors.surfaceContainerLowest,
+  selectorWrapper: {
+    height: "auto",
+    minHeight: 56,
+    paddingVertical: Theme.spacing.sm,
+  },
+  selectorMainText: {
+    color: Theme.colors.onSurface,
+    fontWeight: "600",
+  },
+  selectorSubText: {
+    color: Theme.colors.outline,
+    marginTop: 2,
+  },
+  selectorPlaceholder: {
+    color: Theme.colors.outlineVariant,
   },
   inputIcon: {
     marginRight: Theme.spacing.sm,
-  },
-  textInput: {
-    flex: 1,
-    height: "100%",
-    color: Theme.colors.onSurface,
-    fontWeight: "600",
   },
   segmentedControl: {
     flexDirection: "row",
@@ -446,5 +686,76 @@ const styles = StyleSheet.create({
     color: Theme.colors.onPrimary,
     fontWeight: "700",
     fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: Theme.colors.background,
+    borderTopLeftRadius: Theme.rounded.lg,
+    borderTopRightRadius: Theme.rounded.lg,
+    maxHeight: "75%",
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: Theme.spacing.marginMobile,
+    paddingVertical: Theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.outlineVariant + "30",
+  },
+  modalTitle: {
+    color: Theme.colors.onSurface,
+    fontWeight: "700",
+  },
+  modalCloseBtn: {
+    padding: Theme.spacing.xs,
+  },
+  modalListContent: {
+    paddingHorizontal: Theme.spacing.marginMobile,
+    paddingVertical: Theme.spacing.md,
+    gap: Theme.spacing.sm,
+  },
+  modalItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Theme.colors.surfaceContainerLowest,
+    borderColor: Theme.colors.outlineVariant + "40",
+    borderWidth: 1,
+    borderRadius: Theme.rounded.md,
+    padding: Theme.spacing.md,
+    gap: Theme.spacing.md,
+  },
+  modalItemSelected: {
+    borderColor: Theme.colors.primary,
+    borderWidth: 1.5,
+    backgroundColor: Theme.colors.primaryContainer + "10",
+  },
+  modalItemCode: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: Theme.colors.onSurface,
+  },
+  modalItemTitle: {
+    fontSize: 14,
+    color: Theme.colors.onSurfaceVariant,
+    marginTop: 2,
+  },
+  modalItemSub: {
+    fontSize: 12,
+    color: Theme.colors.outline,
+    marginTop: 2,
+  },
+  modalEmpty: {
+    paddingVertical: Theme.spacing.xl,
+    alignItems: "center",
+  },
+  modalEmptyText: {
+    color: Theme.colors.outline,
+    fontSize: 14,
   },
 });

@@ -1,8 +1,15 @@
 import { Theme } from "@/constants/theme";
-import { useSessionStore } from "@/store";
+import { useCloseSession } from "@/hooks/mutation/use-session";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export const ActiveSessionCard = ({
   activeSession,
@@ -11,11 +18,65 @@ export const ActiveSessionCard = ({
   activeSession: any;
   isPending: boolean;
 }) => {
-  // fetch active session data using the sessionId
-  // For demonstration purposes, we'll use mock data
-
-  const { endActiveSession } = useSessionStore();
+  const { mutate: closeSession, isPending: isClosing } = useCloseSession();
   console.log("ActiveSessionCard - Active Session Data:", activeSession?.id);
+
+  const radius =
+    activeSession?.radius ||
+    activeSession?.radiusMeters ||
+    (typeof activeSession?.venue === "object"
+      ? activeSession?.venue?.radius
+      : undefined) ||
+    50;
+
+  const getDurationInMinutes = (startStr?: string, endStr?: string) => {
+    if (!startStr || !endStr) return 0;
+    const [sh, sm] = startStr.split(":").map(Number);
+    const [eh, em] = endStr.split(":").map(Number);
+    if (isNaN(sh) || isNaN(eh)) return 0;
+    const startMins = sh * 60 + (sm || 0);
+    const endMins = eh * 60 + (em || 0);
+    let diff = endMins - startMins;
+    if (diff < 0) diff += 24 * 60;
+    return diff;
+  };
+
+  const duration =
+    activeSession?.duration ||
+    getDurationInMinutes(activeSession?.startTime, activeSession?.endTime) ||
+    60;
+
+  const handleEndSession = () => {
+    Alert.alert(
+      "End Session",
+      `Are you sure you want to end this attendance session for ${activeSession?.courseCode || "this course"}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "End Session",
+          style: "destructive",
+          onPress: () => {
+            if (activeSession?.id) {
+              closeSession(activeSession.id, {
+                onSuccess: () => {
+                  Alert.alert(
+                    "Success",
+                    "Attendance session successfully ended.",
+                  );
+                },
+                onError: (err: any) => {
+                  Alert.alert(
+                    "Error",
+                    err.message || "Failed to end session.",
+                  );
+                },
+              });
+            }
+          },
+        },
+      ],
+    );
+  };
 
   if (isPending) {
     return <Text>Loading...</Text>;
@@ -51,7 +112,7 @@ export const ActiveSessionCard = ({
             </View>
 
             {/* Course Rep Permission indicator */}
-            {activeSession.courseRepEnabled && (
+            {(activeSession.courseRepEnabled || activeSession.allowRepMarking) && (
               <View style={styles.repBadge}>
                 <Ionicons
                   name="people"
@@ -83,7 +144,7 @@ export const ActiveSessionCard = ({
               <Ionicons name="resize" size={16} color={Theme.colors.primary} />
             </View>
             <Text style={[styles.detailText, Theme.typography.caption]}>
-              Radius: {activeSession.radius ?? 0}m
+              Radius: {radius}m
             </Text>
           </View>
           <View style={styles.detailItem}>
@@ -95,7 +156,7 @@ export const ActiveSessionCard = ({
               />
             </View>
             <Text style={[styles.detailText, Theme.typography.caption]}>
-              Duration: {activeSession.duration ?? 0}m
+              Duration: {duration}m
             </Text>
           </View>
         </View>
@@ -111,11 +172,16 @@ export const ActiveSessionCard = ({
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.endBtn}
-        onPress={endActiveSession}
+        style={[styles.endBtn, isClosing && { opacity: 0.6 }]}
+        onPress={handleEndSession}
+        disabled={isClosing}
         activeOpacity={0.7}
       >
-        <Text style={styles.endBtnText}>End Attendance Session</Text>
+        {isClosing ? (
+          <ActivityIndicator color="#ba1a1a" />
+        ) : (
+          <Text style={styles.endBtnText}>End Attendance Session</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

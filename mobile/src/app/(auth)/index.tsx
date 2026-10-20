@@ -40,10 +40,7 @@ export default function SigninScreen({
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={Theme.colors.background}
-      />
+      <StatusBar barStyle="dark-content" />
 
       {/* Top-Right Native Context Menu Toggle */}
       <View style={styles.floatingHeaderButton}>

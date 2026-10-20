@@ -1,6 +1,6 @@
 import { clockin, lecturerSignin, studentSignin } from "@/service";
 import { useAuthStore } from "@/store";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useStudentSignin = () => {
   return useMutation({
@@ -27,10 +27,21 @@ export const useLecturerSignin = () => {
 };
 
 export const useClockIn = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: clockin,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       console.log("Clock-in successful:", data);
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+      if (variables?.sessionId) {
+        queryClient.invalidateQueries({
+          queryKey: ["sessions", variables.sessionId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["sessions", variables.sessionId, "students"],
+        });
+      }
     },
     onError: (error) => {
       console.error("Clock-in failed:", error);

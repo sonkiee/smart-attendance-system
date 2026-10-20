@@ -3,9 +3,12 @@ import Header from "@/components/header";
 import { Sessions } from "@/components/sessions";
 import { Theme } from "@/constants/theme";
 import { useFetchHistory } from "@/hooks/queries/user";
+import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
+import { useState } from "react";
 import {
   FlatList,
+  RefreshControl,
   StatusBar,
   StyleSheet,
   Text,
@@ -15,13 +18,27 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function StudentDashboard() {
-  const { data, isPending } = useFetchHistory();
-  console.log("history data", data);
+  const queryClient = useQueryClient();
+  const { data } = useFetchHistory();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["sessions"] }),
+        queryClient.invalidateQueries({ queryKey: ["history"] }),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor={Theme.colors.background}
+        // backgroundColor={Theme.colors.background}
       />
 
       {/* Header */}
@@ -34,6 +51,14 @@ export default function StudentDashboard() {
         data={data || []}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => <AttendanceItem item={item} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[Theme.colors.primary]}
+            tintColor={Theme.colors.primary}
+          />
+        }
         ListHeaderComponent={
           <>
             <Sessions />

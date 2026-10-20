@@ -100,10 +100,7 @@ export default function AttendanceSuccess() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={Theme.colors.background}
-      />
+      <StatusBar barStyle="dark-content" />
 
       {/* Background Subtle Pattern Overlay */}
       <View style={styles.patternOverlay} pointerEvents="none">

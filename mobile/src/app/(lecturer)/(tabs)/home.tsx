@@ -7,6 +7,7 @@ import { useSessionStore } from "@/store/session-store";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -20,7 +21,7 @@ export default function LecturerHome() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
   const { endActiveSession } = useSessionStore();
-  const { data, isPending } = useFetchSessionsLecturer();
+  const { data, isPending, refetch, isRefetching } = useFetchSessionsLecturer();
 
   const activeSession = data?.[0];
 
@@ -31,10 +32,7 @@ export default function LecturerHome() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={Theme.colors.background}
-      />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header with Logout */}
       <View style={styles.header}>
@@ -67,6 +65,16 @@ export default function LecturerHome() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => {
+              refetch();
+            }}
+            tintColor={Theme.colors.primary}
+            colors={[Theme.colors.primary]}
+          />
+        }
       >
         {activeSession ? (
           <ActiveSessionCard

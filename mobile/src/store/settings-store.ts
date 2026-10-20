@@ -16,7 +16,7 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      biometricsEnabled: false,
+      biometricsEnabled: true,
       pushNotifications: true,
       checkInReminders: true,
       emailReports: false,

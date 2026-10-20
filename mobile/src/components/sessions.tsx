@@ -10,6 +10,7 @@ export function Sessions() {
   return (
     <FlatList
       data={sessions || []}
+      scrollEnabled={false}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <SessionCard item={item} />}
       ListEmptyComponent={<EmptyState isLoading={isLoading} />}

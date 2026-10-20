@@ -12,6 +12,12 @@ export interface SessionCardProps {
     title?: string;
     location?: string;
     time?: string;
+    courseCode?: string;
+    courseTitle?: string;
+    venueName?: string;
+    venue?: any;
+    startTime?: string;
+    endTime?: string;
   };
   interactive?: boolean;
   rightAction?: "chevron" | "ellipsis" | "none";
@@ -29,9 +35,27 @@ export function SessionCard({
   onPress,
   onRightActionPress,
 }: SessionCardProps) {
-  const displayTitle = item?.title || title || "CSC 423: Compiler Construction I";
-  const displayLocation = item?.location || location || "Hall A2";
-  const displayTime = item?.time || time || "10:00 - 12:00";
+  const displayTitle =
+    item?.courseCode && item?.courseTitle
+      ? `${item.courseCode}: ${item.courseTitle}`
+      : item?.title ||
+        title ||
+        item?.courseTitle ||
+        item?.courseCode ||
+        "CSC 423: Compiler Construction I";
+
+  const displayLocation =
+    item?.venueName ||
+    (typeof item?.venue === "object" ? item?.venue?.name : item?.venue) ||
+    item?.location ||
+    location ||
+    "Hall A2";
+
+  const displayTime =
+    item?.startTime && item?.endTime
+      ? `${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`
+      : item?.time || time || "10:00 - 12:00";
+
   const id = item?.id || "1";
 
   const Container = interactive ? TouchableOpacity : View;

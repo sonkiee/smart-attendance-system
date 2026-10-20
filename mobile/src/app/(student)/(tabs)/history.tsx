@@ -99,10 +99,7 @@ export default function StudentHistory() {
   if (isPending) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor={Theme.colors.background}
-        />
+        <StatusBar barStyle="dark-content" />
         <Header title="History" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Theme.colors.primary} />
@@ -128,10 +125,7 @@ export default function StudentHistory() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={Theme.colors.background}
-      />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
       <Header title="History" />

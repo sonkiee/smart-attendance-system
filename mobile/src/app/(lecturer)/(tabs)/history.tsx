@@ -56,10 +56,7 @@ export default function LecturerHistory() {
   if (isPending) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor={Theme.colors.background}
-        />
+        <StatusBar barStyle="dark-content" />
         <View style={styles.header}>
           <Text style={[styles.headerTitle, Theme.typography.headlineMd]}>
             Past Sessions
@@ -74,10 +71,7 @@ export default function LecturerHistory() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={Theme.colors.background}
-      />
+      <StatusBar barStyle="dark-content" />
 
       <View style={styles.header}>
         <Text style={[styles.headerTitle, Theme.typography.headlineMd]}>

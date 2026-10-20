@@ -24,14 +24,16 @@ export const SummaryCard = ({
   setActiveFilter,
 }: SummaryCardProps) => {
   // Resolve properties based on the live API response structure
-  const isActive = session.status === "active";
-  const courseRepEnabled = session.allowRepMarking;
+  const isActive = session?.status === "active";
+  const courseRepEnabled = !!session?.allowRepMarking;
   const venueName =
-    session.venueName ||
-    (typeof session.venue === "object" ? session.venue?.name : session.venue) ||
+    session?.venueName ||
+    (typeof session?.venue === "object" ? session?.venue?.name : session?.venue) ||
     "Unknown Venue";
   const radius =
-    (typeof session.venue === "object" ? session.venue?.radius : session.radius) || 50;
+    (typeof session?.venue === "object"
+      ? session?.venue?.radius
+      : session?.radius) || 50;
 
   const pendingCount = totalCount - joinedCount;
 
@@ -46,7 +48,9 @@ export const SummaryCard = ({
     return endMins - startMins;
   };
   const duration =
-    session.duration || getDurationInMinutes(session.startTime, session.endTime) || 180;
+    session?.duration ||
+    getDurationInMinutes(session?.startTime, session?.endTime) ||
+    180;
 
   return (
     <View style={styles.headerContainer}>
@@ -56,7 +60,7 @@ export const SummaryCard = ({
 
         <View style={styles.rowBetween}>
           <Text style={[styles.courseTitle, Theme.typography.headlineMd]}>
-            {session.courseTitle}
+            {session?.courseTitle || session?.courseCode || "Course"}
           </Text>
 
           <View style={styles.badgesWrapper}>

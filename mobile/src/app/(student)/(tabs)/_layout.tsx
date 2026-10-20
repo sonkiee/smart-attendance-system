@@ -47,7 +47,7 @@ export default function TabsLayout() {
             <MaterialCommunityIcons
               name={focused ? "home-variant" : "home-variant-outline"}
               size={24}
-              color={color}
+              color={typeof color === "string" ? color : undefined}
             />
           ),
         }}
@@ -57,7 +57,11 @@ export default function TabsLayout() {
         options={{
           title: "History",
           tabBarIcon: ({ color, focused }) => (
-            <MaterialCommunityIcons name="history" size={24} color={color} />
+            <MaterialCommunityIcons
+              name="history"
+              size={24}
+              color={typeof color === "string" ? color : undefined}
+            />
           ),
         }}
       />
@@ -69,7 +73,7 @@ export default function TabsLayout() {
             <MaterialCommunityIcons
               name={focused ? "account-school" : "account-school-outline"}
               size={24}
-              color={color}
+              color={typeof color === "string" ? color : undefined}
             />
           ),
         }}

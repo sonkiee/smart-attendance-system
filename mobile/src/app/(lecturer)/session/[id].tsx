@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   StatusBar,
@@ -23,9 +24,14 @@ type FilterType = "all" | "checked" | "pending";
 export default function SessionDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: session } = useSessionByIdStudent(id);
+  const {
+    data: session,
+    isLoading,
+    isError,
+    error,
+  } = useSessionByIdStudent(id);
 
-  console.log("SessionDetails - Session Data:", session);
+  const closeSessionMutation = useCloseSession();
   const { submitStudentAttendance, toggleCourseRep } = useSessionStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
@@ -61,12 +67,32 @@ export default function SessionDetails() {
     };
   });
 
-  if (!session) {
+  // 1. Loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Theme.colors.primary} />
+          <Text style={[styles.loadingText, Theme.typography.bodyMd]}>
+            Loading session details...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // 2. Error state or not found
+  if (isError || !session) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Session not found</Text>
-          <TouchableOpacity style={styles.backBtnText} onPress={() => router.back()}>
+          <Text style={styles.errorText}>
+            {error?.message || "Session not found"}
+          </Text>
+          <TouchableOpacity
+            style={styles.backBtnText}
+            onPress={() => router.back()}
+          >
             <Text style={{ color: Theme.colors.primary, fontWeight: "700" }}>
               Go Back
             </Text>
@@ -85,13 +111,17 @@ export default function SessionDetails() {
   const attendanceRate =
     totalCount > 0 ? Math.round((joinedCount / totalCount) * 100) : 0;
 
-  // Filter and search logic combined
+  // Filter and search logic combined (safely handling undefined strings)
   const filteredStudents = students.filter((student: any) => {
-    const matchesSearch =
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.matricNumber.toLowerCase().includes(searchQuery.toLowerCase());
+    const studentName = (student.name || "").toLowerCase();
+    const matricNum = (student.matricNumber || "").toLowerCase();
+    const query = (searchQuery || "").toLowerCase();
 
-    const isChecked = student.status === "submitted" || student.status === "present";
+    const matchesSearch =
+      studentName.includes(query) || matricNum.includes(query);
+
+    const isChecked =
+      student.status === "submitted" || student.status === "present";
 
     if (activeFilter === "checked") {
       return matchesSearch && isChecked;
@@ -102,13 +132,16 @@ export default function SessionDetails() {
     return matchesSearch;
   });
 
-  const closeSessionMutation = useCloseSession();
-
   const handleCloseSession = () => {
     if (id) {
       closeSessionMutation.mutate(id, {
         onSuccess: () => {
-          Alert.alert("Success", "Attendance session successfully ended.");
+          Alert.alert("Success", "Attendance session successfully ended.", [
+            {
+              text: "OK",
+              onPress: () => router.replace("/(lecturer)/(tabs)/home"),
+            },
+          ]);
         },
         onError: (err: any) => {
           Alert.alert("Error", err.message || "Failed to end session.");
@@ -161,14 +194,6 @@ export default function SessionDetails() {
               `Attendance records for ${session.courseCode} successfully exported as Excel spreadsheet.`,
             ),
         },
-        {
-          text: "Share PDF Report",
-          onPress: () =>
-            Alert.alert(
-              "Export Success",
-              `Attendance report PDF successfully compiled and shared.`,
-            ),
-        },
         ...(isActive
           ? [
               {
@@ -198,10 +223,7 @@ export default function SessionDetails() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={Theme.colors.background}
-      />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
       <View style={styles.header}>
@@ -213,7 +235,7 @@ export default function SessionDetails() {
           <Ionicons name="arrow-back" size={24} color={Theme.colors.onSurface} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, Theme.typography.headlineMd]}>
-          {session.courseCode}
+          {session?.courseCode || "Session"}
         </Text>
         <TouchableOpacity
           style={styles.menuBtn}
@@ -226,7 +248,7 @@ export default function SessionDetails() {
 
       <FlatList
         data={filteredStudents}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item.id || `student-${index}`}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -324,5 +346,16 @@ const styles = StyleSheet.create({
     color: Theme.colors.outline,
     fontWeight: "600",
     textAlign: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: Theme.spacing.xl,
+  },
+  loadingText: {
+    marginTop: Theme.spacing.md,
+    color: Theme.colors.outline,
+    fontWeight: "600",
   },
 });

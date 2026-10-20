@@ -156,6 +156,15 @@ const getActiveSessionsForStudent = async (studentId: string) => {
       allowRepMarking: attendanceSessions.allowRepMarking,
       lateThresholdMinutes: attendanceSessions.lateThresholdMinutes,
       venueName: venues.name,
+      radius: venues.radiusMeters,
+      radiusMeters: venues.radiusMeters,
+      venue: {
+        id: venues.id,
+        name: venues.name,
+        latitude: venues.latitude,
+        longitude: venues.longitude,
+        radius: venues.radiusMeters,
+      },
     })
     .from(attendanceSessions)
     .innerJoin(
@@ -187,6 +196,15 @@ const getActiveSessionsForLecturer = async (lecturerId: string) => {
       allowRepMarking: attendanceSessions.allowRepMarking,
       lateThresholdMinutes: attendanceSessions.lateThresholdMinutes,
       venueName: venues.name,
+      radius: venues.radiusMeters,
+      radiusMeters: venues.radiusMeters,
+      venue: {
+        id: venues.id,
+        name: venues.name,
+        latitude: venues.latitude,
+        longitude: venues.longitude,
+        radius: venues.radiusMeters,
+      },
       createdAt: attendanceSessions.createdAt,
     })
     .from(attendanceSessions)

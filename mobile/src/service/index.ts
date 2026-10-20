@@ -65,3 +65,14 @@ export const closeSession = async (sessionId: string): Promise<any> => {
   return api.post(`/sessions/${sessionId}/close`);
 };
 
+export const startSession = async (sessionData: any): Promise<any> => {
+  return api.post("/sessions", sessionData);
+};
+
+export const fetchCourses = async (): Promise<any> => {
+  return api.get("/courses");
+};
+
+export const fetchVenues = async (): Promise<any> => {
+  return api.get("/venues");
+};

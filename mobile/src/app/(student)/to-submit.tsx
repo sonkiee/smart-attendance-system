@@ -7,6 +7,7 @@ import { useGeofence } from "@/hooks/use-geofence";
 import { useAuthStore } from "@/store/auth-store";
 import { useSettingsStore } from "@/store/settings-store";
 import { Ionicons } from "@expo/vector-icons";
+import * as LocalAuth from "expo-local-authentication";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -80,21 +81,20 @@ export default function ToSubmit() {
         longitude: result.location.longitude,
       });
 
-      // After location check succeeds:
-      if (biometricsEnabled) {
-        // Option 1: biometrics enabled -> go to biometric screen and automatically prompt
+      // Auto-detect if device has biometric hardware & enrolled credentials, or biometrics is enabled in settings
+      const hasHardware = await LocalAuth.hasHardwareAsync();
+      const isEnrolled = await LocalAuth.isEnrolledAsync();
+
+      if ((hasHardware && isEnrolled) || biometricsEnabled) {
         setState("biometric");
         handleBiometric(result.location.latitude, result.location.longitude);
+      } else if (securityPin) {
+        setState("pin-fallback");
       } else {
-        // Option 2: biometrics disabled -> go straight to PIN entry if a PIN is set
-        if (securityPin) {
-          setState("pin-fallback");
-        } else {
-          // If no biometrics and no PIN is set, throw error
-          throw new Error(
-            "Biometrics is disabled and no security PIN is set in settings.",
-          );
-        }
+        setErrorMsg(
+          "No biometrics or security PIN detected. Please set up a security PIN to mark attendance.",
+        );
+        setState("error");
       }
     } catch (err: any) {
       console.error("Location verification failed:", err);
@@ -119,7 +119,7 @@ export default function ToSubmit() {
         setState("pin-fallback");
       } else {
         setErrorMsg(
-          "Biometrics verification failed and no security PIN is set.",
+          "Biometric verification was not completed. Please retry or set up a security PIN.",
         );
         setState("error");
       }
@@ -294,15 +294,44 @@ export default function ToSubmit() {
                 {errorMsg}
               </Text>
 
-              <TouchableOpacity
-                style={styles.primaryButton}
-                activeOpacity={0.8}
-                onPress={handleLocationCheck}
-              >
-                <Text style={[styles.buttonText, Theme.typography.bodyLg]}>
-                  Retry Verification
-                </Text>
-              </TouchableOpacity>
+              <View style={{ width: "100%", gap: 12 }}>
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  activeOpacity={0.8}
+                  onPress={handleLocationCheck}
+                >
+                  <Text style={[styles.buttonText, Theme.typography.bodyLg]}>
+                    Retry Verification
+                  </Text>
+                </TouchableOpacity>
+
+                {!securityPin && (
+                  <TouchableOpacity
+                    style={[
+                      styles.primaryButton,
+                      {
+                        backgroundColor: Theme.colors.surfaceContainerLowest,
+                        borderColor: Theme.colors.outlineVariant,
+                        borderWidth: 1,
+                      },
+                    ]}
+                    activeOpacity={0.8}
+                    onPress={() =>
+                      router.push("/(student)/(tabs)/(profile)/change-pin")
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.buttonText,
+                        Theme.typography.bodyLg,
+                        { color: Theme.colors.primary },
+                      ]}
+                    >
+                      Set Up Security PIN
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           )}
         </View>
