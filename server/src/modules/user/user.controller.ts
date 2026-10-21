@@ -22,4 +22,55 @@ const resetDevice = async (req: Request, res: Response) => {
   }
 };
 
-export { resetDevice };
+const getAll = async (req: Request, res: Response) => {
+  try {
+    const allUsers = await service.getAllUsers();
+    return res.status(200).json(allUsers);
+  } catch (error: any) {
+    return res.status(500).json({ message: "Failed to fetch users", error: error.message });
+  }
+};
+
+const toggleStatus = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const targetUser = await service.findById(id as any);
+    if (!targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const updated = await service.update(id, { isActive: !targetUser.isActive });
+    return res.status(200).json({
+      message: `User account ${updated?.isActive ? "activated" : "deactivated"} successfully`,
+      user: updated,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ message: "Failed to toggle user status", error: error.message });
+  }
+};
+
+const updateRole = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const { role } = req.body;
+    if (!role || !["student", "lecturer", "admin"].includes(role)) {
+      return res.status(400).json({ message: "Invalid role specified" });
+    }
+
+    const updated = await service.update(id, { role: role as any });
+    return res.status(200).json({ message: "User role updated successfully", user: updated });
+  } catch (error: any) {
+    return res.status(500).json({ message: "Failed to update role", error: error.message });
+  }
+};
+
+const getStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await service.getAdminStats();
+    return res.status(200).json(stats);
+  } catch (error: any) {
+    return res.status(500).json({ message: "Failed to fetch admin stats", error: error.message });
+  }
+};
+
+export { resetDevice, getAll, toggleStatus, updateRole, getStats };

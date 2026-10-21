@@ -1,6 +1,6 @@
 import { SessionCard } from "@/components/session-card";
 import { Theme } from "@/constants/theme";
-import { useSessionById } from "@/hooks/queries/user";
+import { useProfile, useSessionById } from "@/hooks/queries/user";
 import { getCurrentLocation } from "@/service/location";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -24,11 +24,17 @@ export default function AttendanceScreen() {
   console.log("sessionId", sessionId);
 
   const { data, isPending } = useSessionById(sessionId as string);
+  const { data: userProfile } = useProfile();
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
   const mapPulseAnim = useMemo(() => new Animated.Value(0.95), []);
+
+  const isRep =
+    !!userProfile?.student?.id &&
+    !!data?.courseRepStudentId &&
+    userProfile.student.id === data.courseRepStudentId;
 
   useEffect(() => {
     const fetchUserLocation = async () => {
@@ -62,21 +68,22 @@ export default function AttendanceScreen() {
     ).start();
   }, [mapPulseAnim]);
 
-  const GEOAPIFY_API_KEY = "526b4cda7ef34bcab3650b2bdd4136e2"; // Replace with your actual API key
+  const GEOAPIFY_API_KEY = "526b4cda7ef34bcab3650b2bdd4136e2";
 
-  const venueLonLat = "7.4512039,10.4904007";
-  const userLonLat = "7.450611777383408,10.489893913819477";
+  const venueLon = data?.venue?.longitude ?? 7.4512039;
+  const venueLat = data?.venue?.latitude ?? 10.4904007;
+  const userLon = userLocation?.longitude ?? venueLon;
+  const userLat = userLocation?.latitude ?? venueLat;
 
   const mapUri =
     `https://maps.geoapify.com/v1/staticmap` +
-    `?style=osm-bright` +
+    `?style=osm-bright-smooth` +
     `&width=600` +
     `&height=400` +
-    `&center=lonlat:${venueLonLat}` +
-    `&zoom=18` +
-    `&marker=lonlat:${venueLonLat};type:circle;color:%23ff0000;size:large` +
-    `&marker=lonlat:${userLonLat};type:circle;color:%230000ff;size:large` +
-    `&geometry=LINESTRING(${userLonLat},${venueLonLat});stroke:%230000ff;stroke-width:4` +
+    `&center=lonlat:${venueLon},${venueLat}` +
+    `&zoom=17` +
+    `&marker=lonlat:${venueLon},${venueLat};type:awesome;color:%23004ac6;size:large;icon:school` +
+    `&marker=lonlat:${userLon},${userLat};type:awesome;color:%23006c4a;size:medium;icon:circle` +
     `&apiKey=${GEOAPIFY_API_KEY}`;
 
   const handleMarkAttendancePress = () => {
@@ -104,16 +111,16 @@ export default function AttendanceScreen() {
   const formattedTime =
     data?.startTime && data?.endTime
       ? `${data.startTime.substring(0, 5)} - ${data.endTime.substring(0, 5)}`
-      : "17:38 - 20:38";
+      : data?.startTime
+        ? data.startTime.substring(0, 5)
+        : "--:--";
 
   const formattedDate = data?.sessionDate
     ? new Date(data.sessionDate).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
       })
-    : "Aug 16";
-
-  console.log("session data", data);
+    : "Today";
 
   return (
     <SafeAreaView edges={["bottom"]} style={{ flex: 1 }}>
@@ -142,19 +149,84 @@ export default function AttendanceScreen() {
                 styles.semibold,
               ]}
             >
-              09:42 AM
+              {data?.startTime ? data.startTime.substring(0, 5) : formattedTime}
             </Text>
           </View>
         </View>
 
         {/* Active Class Card */}
         <SessionCard
-          title={`${data?.courseCode || "CSC 401"}: ${data?.courseTitle || "Mobile App Development"}`}
-          location={data?.venueName || "Computer Science Lab"}
+          title={
+            data?.courseCode && data?.courseTitle
+              ? `${data.courseCode}: ${data.courseTitle}`
+              : data?.courseCode || data?.courseTitle || "Class Session"
+          }
+          location={data?.venueName || "Classroom"}
           time={formattedTime}
           interactive={false}
           rightAction="ellipsis"
         />
+
+        {/* Course Rep Delegation Action Card */}
+        {data?.allowRepMarking && isRep && (
+          <TouchableOpacity
+            style={styles.repCard}
+            activeOpacity={0.85}
+            onPress={() =>
+              router.push({
+                pathname: "/(student)/rep-roll/[id]",
+                params: { id: sessionId as string },
+              })
+            }
+          >
+            <View style={styles.repCardHeader}>
+              <View style={styles.repBadge}>
+                <Ionicons
+                  name="shield-checkmark"
+                  size={14}
+                  color={Theme.colors.secondary}
+                />
+                <Text style={styles.repBadgeText}>COURSE REP DELEGATION</Text>
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={18}
+                color={Theme.colors.secondary}
+              />
+            </View>
+
+            <Text style={[styles.repTitle, Theme.typography.headlineMd]}>
+              Take Class Roll Call
+            </Text>
+            <Text style={[styles.repSubtitle, Theme.typography.caption]}>
+              Lecturer has authorized you to mark attendance for your peers. Tap here to view the class roster and check students in.
+            </Text>
+
+            <View style={styles.repActionRow}>
+              <Text style={styles.repActionText}>OPEN CLASS ROLL CALL</Text>
+              <Ionicons
+                name="arrow-forward"
+                size={16}
+                color={Theme.colors.secondary}
+              />
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {/* Informational note for peers when rep delegation is active */}
+        {data?.allowRepMarking && !isRep && (
+          <View style={styles.repInfoBadge}>
+            <Ionicons
+              name="information-circle-outline"
+              size={18}
+              color={Theme.colors.secondary}
+            />
+            <Text style={styles.repInfoText}>
+              Course Rep roll call is enabled by the lecturer for this session.
+            </Text>
+          </View>
+        )}
+
         {/* Large Mark Attendance Button */}
         <TouchableOpacity
           style={[styles.ctaButton, Theme.shadows.attendanceButton]}
@@ -175,7 +247,7 @@ export default function AttendanceScreen() {
           <Image
             style={styles.mapBackground}
             source={{
-              uri: "https://maps.geoapify.com/v1/staticmap?style=osm-bright-smooth&width=600&height=400&center=lonlat%3A-122.29009844646316%2C47.54607447032754&zoom=14.3497&marker=lonlat%3A-122.29188334609739%2C47.54403990655936%3Btype%3Aawesome%3Bcolor%3A%23bb3f73%3Bsize%3Ax-large%3Bicon%3Apaw%7Clonlat%3A-122.29282631194182%2C47.549609195001494%3Btype%3Amaterial%3Bcolor%3A%234c905a%3Bicon%3Atree%3Bicontype%3Aawesome%7Clonlat%3A-122.28726954893025%2C47.541766557545884%3Btype%3Amaterial%3Bcolor%3A%234c905a%3Bicon%3Atree%3Bicontype%3Aawesome&apiKey=526b4cda7ef34bcab3650b2bdd4136e2",
+              uri: mapUri,
             }}
             contentFit="cover"
           />
@@ -192,7 +264,7 @@ export default function AttendanceScreen() {
           </View>
           <View style={styles.mapLabel}>
             <Text style={[styles.mapLabelText, Theme.typography.labelMd]}>
-              Live Location: {data?.venueName || "Computer Science Lab"} Area
+              Live Location: {data?.venueName || "Classroom"} Area
             </Text>
           </View>
         </View>
@@ -315,5 +387,75 @@ const styles = StyleSheet.create({
   mapLabelText: {
     color: Theme.colors.onSurface,
     fontWeight: "600",
+  },
+  repCard: {
+    backgroundColor: Theme.colors.surfaceContainerLowest,
+    borderColor: Theme.colors.secondary + "40",
+    borderWidth: 1.5,
+    borderRadius: Theme.rounded.md,
+    padding: Theme.spacing.md,
+    marginVertical: Theme.spacing.sm,
+    ...Theme.shadows.soft,
+  },
+  repCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Theme.spacing.xs,
+  },
+  repBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: Theme.colors.secondary + "15",
+    paddingHorizontal: Theme.spacing.sm,
+    paddingVertical: 4,
+    borderRadius: Theme.rounded.full,
+  },
+  repBadgeText: {
+    color: Theme.colors.secondary,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+  repTitle: {
+    color: Theme.colors.onSurface,
+    fontWeight: "700",
+    marginTop: 6,
+  },
+  repSubtitle: {
+    color: Theme.colors.outline,
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  repActionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: Theme.spacing.md,
+    paddingTop: Theme.spacing.xs,
+  },
+  repActionText: {
+    color: Theme.colors.secondary,
+    fontWeight: "800",
+    fontSize: 12,
+    letterSpacing: 0.5,
+  },
+  repInfoBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: Theme.colors.secondary + "10",
+    borderColor: Theme.colors.secondary + "30",
+    borderWidth: 1,
+    padding: Theme.spacing.sm,
+    borderRadius: Theme.rounded.sm,
+    marginVertical: Theme.spacing.xs,
+  },
+  repInfoText: {
+    color: Theme.colors.secondary,
+    fontSize: 12,
+    flex: 1,
+    fontWeight: "500",
   },
 });

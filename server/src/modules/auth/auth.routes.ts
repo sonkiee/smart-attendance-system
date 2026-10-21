@@ -11,4 +11,7 @@ router.route("/student/activate").post(controller.activate).all(methodNotAllowed
 // Lecturer Auth Routes
 router.route("/lecturer/signin").post(controller.lecturerSignin).all(methodNotAllowed);
 
+// Admin Auth Routes
+router.route("/admin/signin").post(controller.adminSignin).all(methodNotAllowed);
+
 export default router;

@@ -50,6 +50,16 @@ async function main() {
   const salt = bcrypt.genSaltSync(10);
   const passwordHash = bcrypt.hashSync("Password123!", salt);
 
+  // Create System Administrator
+  console.log("🛡️ Creating System Administrator...");
+  await db.insert(users).values({
+    email: "admin@attendance.com",
+    passwordHash,
+    role: "admin",
+    isActivated: true,
+    isActive: true,
+  });
+
   // 3. Create Lecturers
   console.log("👨‍🏫 Creating Lecturers...");
   const lecturerData = [

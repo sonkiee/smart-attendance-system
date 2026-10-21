@@ -11,12 +11,20 @@ export interface AttendanceItemProps {
   variant?: "home" | "history"; // Defaults to "home"
   item?: {
     id?: string | number;
+    sessionId?: string;
     name?: string;
     course?: string;
+    courseCode?: string;
+    courseTitle?: string;
     code?: string;
     date?: string;
+    sessionDate?: string;
     time?: string;
+    startTime?: string;
+    endTime?: string;
+    markedAt?: string | Date;
     status?: string;
+    isManual?: boolean;
     iconName?: keyof typeof Ionicons.glyphMap;
   };
 }
@@ -31,10 +39,47 @@ export function AttendanceItem({
   item,
 }: AttendanceItemProps) {
   
-  // Resolve values from direct props or nested item object
-  const displayCourse = course || item?.course || item?.name || "CSC 421: OS Lab";
-  const displayDate = date || item?.date || "Oct 21";
-  const displayTime = time || item?.time || "11:00 AM";
+  // Resolve values from direct props or nested API record
+  const displayCourse =
+    course ||
+    (item?.courseCode && item?.courseTitle
+      ? `${item.courseCode}: ${item.courseTitle}`
+      : item?.courseCode || item?.courseTitle || item?.course || item?.name || "Class Session");
+
+  let displayDate = date || item?.date;
+  if (!displayDate && item?.sessionDate) {
+    try {
+      displayDate = new Date(item.sessionDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      displayDate = item.sessionDate;
+    }
+  }
+  if (!displayDate) displayDate = "";
+
+  let displayTime = time || item?.time;
+  if (!displayTime && (item?.markedAt || item?.startTime)) {
+    if (item?.markedAt) {
+      try {
+        const d = new Date(item.markedAt);
+        let hours = d.getHours();
+        const minutes = d.getMinutes();
+        const ampm = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+        displayTime = `${hours}:${minutesStr} ${ampm}`;
+      } catch {
+        displayTime = item.startTime ? item.startTime.substring(0, 5) : "";
+      }
+    } else if (item?.startTime) {
+      displayTime = item.startTime.substring(0, 5);
+    }
+  }
+  if (!displayTime) displayTime = "";
+
   const displayStatus = item?.status || status;
   const displayIcon = item?.iconName || iconName;
 

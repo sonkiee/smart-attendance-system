@@ -18,6 +18,7 @@ export interface SessionCardProps {
     venue?: any;
     startTime?: string;
     endTime?: string;
+    allowRepMarking?: boolean;
   };
   interactive?: boolean;
   rightAction?: "chevron" | "ellipsis" | "none";
@@ -42,21 +43,21 @@ export function SessionCard({
         title ||
         item?.courseTitle ||
         item?.courseCode ||
-        "CSC 423: Compiler Construction I";
+        "Active Class Session";
 
   const displayLocation =
     item?.venueName ||
     (typeof item?.venue === "object" ? item?.venue?.name : item?.venue) ||
     item?.location ||
     location ||
-    "Hall A2";
+    "Campus Venue";
 
   const displayTime =
     item?.startTime && item?.endTime
       ? `${item.startTime.substring(0, 5)} - ${item.endTime.substring(0, 5)}`
-      : item?.time || time || "10:00 - 12:00";
+      : item?.time || time || "--:--";
 
-  const id = item?.id || "1";
+  const id = item?.id ? String(item.id) : "";
 
   const Container = interactive ? TouchableOpacity : View;
 
@@ -68,10 +69,30 @@ export function SessionCard({
     >
       <View style={styles.cardDecorativeCircle} />
       <View style={styles.activeTagRow}>
-        <View style={styles.activePill}>
-          <Text style={[styles.activePillText, Theme.typography.labelMd]}>
-            ACTIVE NOW
-          </Text>
+        <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+          <View style={styles.activePill}>
+            <Text style={[styles.activePillText, Theme.typography.labelMd]}>
+              ACTIVE NOW
+            </Text>
+          </View>
+          {item?.allowRepMarking && (
+            <View
+              style={[
+                styles.activePill,
+                { backgroundColor: Theme.colors.secondary + "20" },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.activePillText,
+                  Theme.typography.labelMd,
+                  { color: Theme.colors.secondary },
+                ]}
+              >
+                REP DELEGATED
+              </Text>
+            </View>
+          )}
         </View>
         {rightAction !== "none" && (
           <TouchableOpacity

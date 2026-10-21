@@ -7,12 +7,14 @@ import { shield } from "../../middlewares/auth.middleware.js";
 const router = express.Router();
 
 router.route("/")
-  .post(shield, controller.create)
-  .get(shield, controller.getAll)
+  .post(controller.create)
+  .get(controller.getAll)
   .all(methodNotAllowed);
 
 router.route("/:id")
-  .get(shield, controller.getById)
+  .get(controller.getById)
+  .put(controller.update)
+  .delete(controller.remove)
   .all(methodNotAllowed);
 
 router.route("/:id/students/import")
@@ -24,8 +26,8 @@ router.route("/:id/students")
   .all(methodNotAllowed);
 
 router.route("/:id/lecturers")
-  .post(shield, controller.assignLecturers)
-  .get(shield, controller.getCourseLecturers)
+  .post(controller.assignLecturers)
+  .get(controller.getCourseLecturers)
   .all(methodNotAllowed);
 
 // Course Rep promotion and retrieval
@@ -40,7 +42,7 @@ router.route("/:id/reps/:studentId")
 
 // CSV Attendance Export
 router.route("/:id/export")
-  .get(shield, controller.exportAttendance)
+  .get(controller.exportAttendance)
   .all(methodNotAllowed);
 
 // Course Attendance Stats (75% Rule check)

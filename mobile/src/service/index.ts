@@ -39,6 +39,10 @@ export const prefetchUser = async (): Promise<any> => {
   return api.get("/students/profile");
 };
 
+export const prefetchLecturerUser = async (): Promise<any> => {
+  return api.get("/lecturers/profile");
+};
+
 export const fetchHistory = async (): Promise<any> => {
   return api.get(`/attendance/history`);
 };
@@ -75,4 +79,28 @@ export const fetchCourses = async (): Promise<any> => {
 
 export const fetchVenues = async (): Promise<any> => {
   return api.get("/venues");
+};
+
+export const manualMarkAttendance = async (data: {
+  sessionId: string;
+  studentId: string;
+  status: "present" | "late" | "absent";
+}): Promise<any> => {
+  return api.post("/attendance/manual", data);
+};
+
+export const toggleRepMarking = async (data: {
+  sessionId: string;
+  allowRepMarking: boolean;
+}): Promise<any> => {
+  return api.post(`/sessions/${data.sessionId}/toggle-rep-marking`, {
+    allowRepMarking: data.allowRepMarking,
+  });
+};
+
+export const fetchCourseExportCsv = async (courseId: string): Promise<string> => {
+  const res = await api.get(`/courses/${courseId}/export`, {
+    responseType: "text",
+  });
+  return typeof res === "string" ? res : (res as any)?.data || String(res);
 };

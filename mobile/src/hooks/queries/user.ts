@@ -6,6 +6,7 @@ import {
   fetchSessions,
   fetchSessionsLecturer,
   fetchVenues,
+  prefetchLecturerUser,
   prefetchUser,
 } from "@/service";
 import { useAuthStore } from "@/store";
@@ -16,6 +17,18 @@ export const useProfile = () => {
   return useQuery({
     queryKey: ["profile"],
     queryFn: prefetchUser,
+    enabled: !!token,
+
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
+
+export const useLecturerProfile = () => {
+  const token = useAuthStore((state) => state.token);
+  return useQuery({
+    queryKey: ["profile", "lecturer"],
+    queryFn: prefetchLecturerUser,
     enabled: !!token,
 
     staleTime: 5 * 60 * 1000,

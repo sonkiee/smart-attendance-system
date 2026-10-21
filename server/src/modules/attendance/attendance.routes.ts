@@ -15,6 +15,15 @@ router.route("/sessions/:sessionId/mark-manual")
   .post(shield, controller.markManual)
   .all(methodNotAllowed);
 
+router.route("/manual")
+  .post(shield, (req, res, next) => {
+    if (req.body.sessionId) {
+      (req as any).params.sessionId = req.body.sessionId;
+    }
+    return controller.markManual(req, res);
+  })
+  .all(methodNotAllowed);
+
 // Unverified attendance queue and verification (Lecturer)
 router.route("/sessions/:sessionId/unverified")
   .get(shield, controller.getUnverified)

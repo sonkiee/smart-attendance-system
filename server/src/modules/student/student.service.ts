@@ -30,4 +30,25 @@ const findByUserId = async (userId: string) => {
   return result[0] || null;
 };
 
-export { findByMatric, findByUserId };
+const getAll = async () => {
+  return await db
+    .select({
+      id: students.id,
+      userId: students.userId,
+      matricNumber: students.matricNumber,
+      firstName: students.firstName,
+      lastName: students.lastName,
+      department: students.department,
+      level: students.level,
+      email: users.email,
+      role: users.role,
+      isActive: users.isActive,
+      isActivated: users.isActivated,
+      deviceId: users.deviceId,
+      createdAt: users.createdAt,
+    })
+    .from(students)
+    .innerJoin(users, eq(students.userId, users.id));
+};
+
+export { findByMatric, findByUserId, getAll };

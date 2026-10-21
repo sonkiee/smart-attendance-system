@@ -84,7 +84,7 @@ export const ListStudentItem = ({
           </Text>
         </View>
 
-        {isActive && item.status === "waiting" && (
+        {isActive && item.status !== "present" && item.status !== "submitted" && (
           <TouchableOpacity
             style={styles.checkBtn}
             onPress={() => handleManualCheck(item.id)}

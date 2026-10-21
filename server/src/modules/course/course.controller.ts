@@ -179,8 +179,8 @@ const getCourseReps = async (req: Request, res: Response) => {
 const exportAttendance = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    if (!user || user.role !== "lecturer") {
-      return res.status(403).json({ message: "Only lecturers can export course attendance" });
+    if (user && user.role !== "lecturer" && user.role !== "admin") {
+      return res.status(403).json({ message: "Only lecturers and administrators can export course attendance" });
     }
 
     const courseId = req.params.id as string;
@@ -277,10 +277,45 @@ const getCourseStats = async (req: Request, res: Response) => {
   }
 };
 
+const update = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const { courseCode, courseTitle, unit, department, level } = req.body;
+    const course = await service.update(id, {
+      courseCode,
+      courseTitle,
+      unit: unit !== undefined ? Number(unit) : undefined,
+      department,
+      level: level !== undefined ? Number(level) : undefined,
+    });
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+    return res.status(200).json(course);
+  } catch (error: any) {
+    return res.status(500).json({ message: "Failed to update course", error: error.message });
+  }
+};
+
+const remove = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const deleted = await service.remove(id);
+    if (!deleted) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+    return res.status(200).json({ message: "Course deleted successfully", course: deleted });
+  } catch (error: any) {
+    return res.status(500).json({ message: "Failed to delete course", error: error.message });
+  }
+};
+
 export {
   create,
   getAll,
   getById,
+  update,
+  remove,
   importStudents,
   assignLecturers,
   getCourseLecturers,

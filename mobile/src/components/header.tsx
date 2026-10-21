@@ -27,7 +27,7 @@ export default function Header({
           <Image
             style={styles.avatar}
             source={{
-              uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDgc2g5rH3Wgo0FEkDdDNbfkpPMGqczIkHc83eTfe3CTknwUhqHhVijtQmS6_rcmWAWhYF_wkSlTohr-DUcCw1CiHx-OWnqpwuJpfFHRN4OBiPkJw0ZHufSDsGIt7VXn6uinFAt2Vv2QNGOVCPD0bImoV_cctexyAwICRSMHpn0C5NW7pwfEUclDKEIzGNiHWv18OReT0t_kkRrMjcpdwkdO4VF2pgLD1tkvkAKhbEmuUGEJxzQ_Y0",
+              uri: Theme.defaultAvatar,
             }}
             contentFit="cover"
           />
@@ -35,14 +35,13 @@ export default function Header({
         <View>
           <Text style={[styles.greeting, Theme.typography.headlineMd]}>
             {title}
-            {isHome && ` ${profile?.student?.firstName || "Jane"}`}
+            {isHome && ` ${profile?.student?.firstName || "Student"}`}
           </Text>
           {isHome && (
             <Text style={[styles.degreeText, Theme.typography.labelMd]}>
-              {(
-                profile?.student?.matricNumber || "KASU/22/CSC/1207"
-              ).toUpperCase()}{" "}
-              • Computer Science
+              {(profile?.student?.matricNumber || "").toUpperCase()}
+              {profile?.student?.matricNumber ? " • " : ""}
+              {profile?.student?.department || "Computer Science"}
             </Text>
           )}
         </View>

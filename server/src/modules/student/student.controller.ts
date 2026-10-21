@@ -15,4 +15,13 @@ const profile = async (req: Request, res: Response) => {
   return res.status(200).json(student);
 };
 
-export { profile };
+const getAll = async (req: Request, res: Response) => {
+  try {
+    const allStudents = await studentService.getAll();
+    return res.status(200).json(allStudents);
+  } catch (err: any) {
+    return res.status(500).json({ message: "Failed to fetch students", error: err.message });
+  }
+};
+
+export { profile, getAll };

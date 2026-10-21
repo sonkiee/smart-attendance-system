@@ -14,6 +14,8 @@ const router = express.Router();
 router.use("/auth", authLimiter);
 router.use("/auth", userAuth);
 router.use("/auth", roleAuth);
+router.use("/users", userAuth);
+router.use("/admin", userAuth);
 router.use("/students", studentRoutes);
 router.use("/courses", courseRoutes);
 router.use("/lecturers", lecturerRoutes);

@@ -7,6 +7,7 @@ import {
   venues,
   courses,
   students,
+  courseReps,
 } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 
@@ -67,10 +68,12 @@ const getById = async (id: string) => {
       lateThresholdMinutes: attendanceSessions.lateThresholdMinutes,
       createdAt: attendanceSessions.createdAt,
       venueName: venues.name,
+      courseRepStudentId: courseReps.studentId,
     })
     .from(attendanceSessions)
     .innerJoin(courses, eq(attendanceSessions.courseId, courses.id))
     .leftJoin(venues, eq(attendanceSessions.venueId, venues.id))
+    .leftJoin(courseReps, eq(attendanceSessions.courseId, courseReps.courseId))
     .where(eq(attendanceSessions.id, id))
     .limit(1);
   return session || null;
@@ -101,10 +104,12 @@ const getByIdWithStudents = async (id: string) => {
       lateThresholdMinutes: attendanceSessions.lateThresholdMinutes,
       createdAt: attendanceSessions.createdAt,
       venueName: venues.name,
+      courseRepStudentId: courseReps.studentId,
     })
     .from(attendanceSessions)
     .innerJoin(courses, eq(attendanceSessions.courseId, courses.id))
     .leftJoin(venues, eq(attendanceSessions.venueId, venues.id))
+    .leftJoin(courseReps, eq(attendanceSessions.courseId, courseReps.courseId))
     .where(eq(attendanceSessions.id, id))
     .limit(1);
 
@@ -118,7 +123,7 @@ const getByIdWithStudents = async (id: string) => {
       lastName: students.lastName,
       department: students.department,
       level: students.level,
-      attendanceStatus: sql<string>`COALESCE(${attendanceRecords.status}, 'absent')`,
+      attendanceStatus: sql<string>`COALESCE(${attendanceRecords.status}::text, ${session.status === "active" ? sql`'waiting'` : sql`'absent'`})`,
       markedAt: attendanceRecords.markedAt,
       isManual: attendanceRecords.isManual,
     })
@@ -165,6 +170,7 @@ const getActiveSessionsForStudent = async (studentId: string) => {
         longitude: venues.longitude,
         radius: venues.radiusMeters,
       },
+      courseRepStudentId: courseReps.studentId,
     })
     .from(attendanceSessions)
     .innerJoin(
@@ -176,6 +182,7 @@ const getActiveSessionsForStudent = async (studentId: string) => {
     )
     .innerJoin(courses, eq(attendanceSessions.courseId, courses.id))
     .leftJoin(venues, eq(attendanceSessions.venueId, venues.id))
+    .leftJoin(courseReps, eq(attendanceSessions.courseId, courseReps.courseId))
     .where(eq(attendanceSessions.status, "active"));
 };
 

@@ -25,6 +25,14 @@ export default function StudentLayout() {
           header: ({ options }) => <SubHeader isCancel title={options.title} />,
         }}
       />
+      <Stack.Screen
+        name="rep-roll/[id]"
+        options={{
+          headerShown: true,
+          title: "Course Rep Attendance",
+          header: ({ options }) => <SubHeader title={options.title} />,
+        }}
+      />
     </Stack>
   );
 }

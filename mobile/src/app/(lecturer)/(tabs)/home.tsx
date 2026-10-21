@@ -1,9 +1,8 @@
 import { ActiveSessionCard } from "@/components/lecturer/active-session-card";
 import { NoSession } from "@/components/lecturer/no-session";
 import { Theme } from "@/constants/theme";
-import { useFetchSessionsLecturer } from "@/hooks/queries/user";
+import { useFetchSessionsLecturer, useLecturerProfile } from "@/hooks/queries/user";
 import { useAuthStore } from "@/store/auth-store";
-import { useSessionStore } from "@/store/session-store";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
@@ -20,10 +19,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function LecturerHome() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
-  const { endActiveSession } = useSessionStore();
   const { data, isPending, refetch, isRefetching } = useFetchSessionsLecturer();
+  const { data: lecturerProfile } = useLecturerProfile();
 
   const activeSession = data?.[0];
+
+  const initials = lecturerProfile
+    ? `${lecturerProfile.firstName?.[0] || ""}${lecturerProfile.lastName?.[0] || ""}`
+    : "LC";
+  const lecturerName = lecturerProfile
+    ? `Dr. ${lecturerProfile.firstName} ${lecturerProfile.lastName}`
+    : "Lecturer Portal";
+  const department = lecturerProfile?.department || "Computer Science";
 
   const handleLogout = () => {
     logout();
@@ -38,14 +45,14 @@ export default function LecturerHome() {
       <View style={styles.header}>
         <View style={styles.profileSection}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>DS</Text>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
           <View>
             <Text style={[styles.greeting, Theme.typography.headlineMd]}>
-              Dr. Smith
+              {lecturerName}
             </Text>
             <Text style={[styles.role, Theme.typography.caption]}>
-              Lecturer • CS Department
+              Staff #{lecturerProfile?.staffNumber || ""} • {department}
             </Text>
           </View>
         </View>

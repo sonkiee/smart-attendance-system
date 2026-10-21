@@ -73,7 +73,7 @@ export default function StudentProfile() {
               <Image
                 style={styles.avatar}
                 source={{
-                  uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuA_Zm0PocLuqsBQ0txERXF2PeOgCJipXt2_tUsr-PLrOB935Y898-MygB0PrS3ALgCEdx64UQwPuM3jDy13eYDCanD5Xjj6H-cjgigP8JVffcGCP_8LJiQwfppNUYCK5BCvRPeCzsToDl-xEM2WaIaj5sggcblaYfeOcD_REthh23V-xbFWY6szw72WMIwJoHap66UQHcqc4vYKMz_yDyfWy5Hb7p-BU1Qzlr8O5-lEnKsIfmXctfw",
+                  uri: Theme.defaultAvatar,
                 }}
                 contentFit="cover"
               />
@@ -90,10 +90,10 @@ export default function StudentProfile() {
           <Text style={[styles.profileName, Theme.typography.headlineLg]}>
             {profile?.student
               ? `${profile.student.firstName} ${profile.student.lastName}`
-              : "Jane Smith"}
+              : "Student"}
           </Text>
           <Text style={[styles.profileId, Theme.typography.bodyMd]}>
-            {(profile?.student?.matricNumber || "csc/2020/001").toUpperCase()}
+            {(profile?.student?.matricNumber || "").toUpperCase()}
           </Text>
 
           <View style={styles.heroGrid}>

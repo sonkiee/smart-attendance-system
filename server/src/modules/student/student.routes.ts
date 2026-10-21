@@ -5,6 +5,7 @@ import { shield } from "@/middlewares/auth.middleware.js";
 
 const router = express.Router();
 
+router.route("/").get(controller.getAll).all(methodNotAllowed);
 router.route("/profile").get(shield, controller.profile).all(methodNotAllowed);
 
 export default router;

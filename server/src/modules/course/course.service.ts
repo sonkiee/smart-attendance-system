@@ -196,10 +196,29 @@ const getCourseAttendanceStats = async (courseId: string) => {
   });
 };
 
+const update = async (id: string, data: Partial<NewCourse>) => {
+  const [course] = await db
+    .update(courses)
+    .set(data)
+    .where(eq(courses.id, id))
+    .returning();
+  return course || null;
+};
+
+const remove = async (id: string) => {
+  const [deleted] = await db
+    .delete(courses)
+    .where(eq(courses.id, id))
+    .returning();
+  return deleted || null;
+};
+
 export {
   create,
   getAll,
   getById,
+  update,
+  remove,
   enrollStudentsByMatric,
   assignLecturers,
   getCourseLecturers,

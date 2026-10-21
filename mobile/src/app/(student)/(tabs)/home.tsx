@@ -48,8 +48,8 @@ export default function StudentDashboard() {
       />
 
       <FlatList
-        data={data || []}
-        keyExtractor={(item, index) => index.toString()}
+        data={(data || []).slice(0, 5)}
+        keyExtractor={(item, index) => item.sessionId || item.id || index.toString()}
         renderItem={({ item }) => <AttendanceItem item={item} />}
         refreshControl={
           <RefreshControl
@@ -63,9 +63,13 @@ export default function StudentDashboard() {
           <>
             <Sessions />
             <View style={styles.recentActivityHeader}>
-              <Text>Recent Activity</Text>
-              <TouchableOpacity>
-                <Text>View All</Text>
+              <Text style={[styles.activityTitle, Theme.typography.headlineMd]}>
+                Recent Activity
+              </Text>
+              <TouchableOpacity onPress={() => router.push("/(student)/(tabs)/history")}>
+                <Text style={[styles.viewAllBtn, Theme.typography.labelMd]}>
+                  View All
+                </Text>
               </TouchableOpacity>
             </View>
           </>

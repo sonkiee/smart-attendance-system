@@ -123,4 +123,47 @@ const lecturerSignin = async (req: Request, res: Response) => {
   return res.status(200).json({ token, role: user.role });
 };
 
-export { signin, activate, lecturerSignin };
+const adminSignin = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  const user = await userService.findByEmail(email.trim().toLowerCase());
+
+  if (!user) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
+
+  if (user.role !== "admin") {
+    return res.status(403).json({
+      message: "Access restricted. Only System Administrators can access this portal.",
+    });
+  }
+
+  if (!user.isActive) {
+    return res.status(403).json({
+      message: "Admin account is deactivated. Contact system support.",
+    });
+  }
+
+  const isPasswordValid = bcrypt.compareSync(password, user.passwordHash);
+
+  if (!isPasswordValid) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
+
+  const token = jwt.sign(user);
+
+  return res.status(200).json({
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    },
+  });
+};
+
+export { signin, activate, lecturerSignin, adminSignin };

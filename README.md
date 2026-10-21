@@ -28,6 +28,7 @@ The system is structured as a monorepo containing three main components:
 *(To be updated as development begins)*
 
 ### Prerequisites
+
 - Node.js / Python / Go (depending on backend choice)
 - Mobile framework SDK (Flutter / React Native / Native)
 - Database setup (SQL/NoSQL)

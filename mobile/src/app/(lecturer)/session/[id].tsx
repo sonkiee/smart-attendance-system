@@ -1,9 +1,13 @@
 import { ListStudentItem } from "@/components/lecturer/list-student-item";
 import { SummaryCard } from "@/components/lecturer/summary-card";
 import { Theme } from "@/constants/theme";
-import { useCloseSession } from "@/hooks/mutation/use-session";
+import {
+  useCloseSession,
+  useManualMarkAttendance,
+  useToggleRepMarking,
+} from "@/hooks/mutation/use-session";
 import { useSessionByIdStudent } from "@/hooks/queries/user";
-import { useSessionStore } from "@/store/session-store";
+import { fetchCourseExportCsv } from "@/service";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -11,6 +15,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Share,
   StatusBar,
   StyleSheet,
   Text,
@@ -32,7 +37,8 @@ export default function SessionDetails() {
   } = useSessionByIdStudent(id);
 
   const closeSessionMutation = useCloseSession();
-  const { submitStudentAttendance, toggleCourseRep } = useSessionStore();
+  const manualMarkMutation = useManualMarkAttendance();
+  const toggleRepMutation = useToggleRepMarking();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
 
@@ -54,10 +60,12 @@ export default function SessionDetails() {
       s.attendanceStatus === "submitted"
     ) {
       status = "present";
-    } else if (s.attendanceStatus === "absent") {
+    } else if (s.attendanceStatus === "late") {
+      status = "late";
+    } else if (s.attendanceStatus === "absent" && !isActive) {
       status = "absent";
     } else {
-      status = s.attendanceStatus || "waiting";
+      status = isActive ? "waiting" : (s.attendanceStatus || "absent");
     }
 
     return {
@@ -104,7 +112,10 @@ export default function SessionDetails() {
 
   // Count items for filter sub-labels
   const joinedCount = students.filter(
-    (s: any) => s.status === "present" || s.status === "submitted",
+    (s: any) =>
+      s.status === "present" ||
+      s.status === "submitted" ||
+      s.status === "late",
   ).length;
   const totalCount = students.length;
   const pendingCount = totalCount - joinedCount;
@@ -121,7 +132,9 @@ export default function SessionDetails() {
       studentName.includes(query) || matricNum.includes(query);
 
     const isChecked =
-      student.status === "submitted" || student.status === "present";
+      student.status === "submitted" ||
+      student.status === "present" ||
+      student.status === "late";
 
     if (activeFilter === "checked") {
       return matchesSearch && isChecked;
@@ -152,7 +165,37 @@ export default function SessionDetails() {
 
   const handleManualCheck = (studentId: string) => {
     if (isActive && id) {
-      submitStudentAttendance(id, studentId);
+      manualMarkMutation.mutate(
+        { sessionId: id, studentId, status: "present" },
+        {
+          onSuccess: () => {
+            Alert.alert("Success", "Student manually verified and marked as Present.");
+          },
+          onError: (err: any) => {
+            Alert.alert(
+              "Error",
+              err.response?.data?.message || err.message || "Failed to mark attendance."
+            );
+          },
+        }
+      );
+    }
+  };
+
+  const handleExportCsv = async () => {
+    const courseId = session?.courseId || session?.course?.id;
+    if (!courseId) {
+      Alert.alert("Export Error", "Course identifier not found for this session.");
+      return;
+    }
+    try {
+      const csvContent = await fetchCourseExportCsv(courseId);
+      await Share.share({
+        title: `${session.courseCode || "Course"}_Attendance.csv`,
+        message: csvContent,
+      });
+    } catch (err: any) {
+      Alert.alert("Export Failed", err.message || "Could not generate or share CSV file.");
     }
   };
 
@@ -168,31 +211,35 @@ export default function SessionDetails() {
             : "Allow Course Rep to Take Attendance",
           onPress: () => {
             if (id) {
-              toggleCourseRep(id);
-              Alert.alert(
-                "Delegation Updated",
-                isRepActive
-                  ? "Course representative permissions successfully revoked."
-                  : "Course representative successfully authorized to mark attendance on your behalf.",
+              toggleRepMutation.mutate(
+                { sessionId: id, allowRepMarking: !isRepActive },
+                {
+                  onSuccess: () => {
+                    Alert.alert(
+                      "Delegation Updated",
+                      !isRepActive
+                        ? "Course representative successfully authorized to mark attendance on your behalf."
+                        : "Course representative permissions successfully revoked."
+                    );
+                  },
+                  onError: (err: any) => {
+                    Alert.alert(
+                      "Delegation Error",
+                      err.response?.data?.message || err.message || "Failed to update delegation."
+                    );
+                  },
+                }
               );
             }
           },
         },
         {
           text: "Export as CSV File",
-          onPress: () =>
-            Alert.alert(
-              "Export Success",
-              `Attendance records for ${session.courseCode} successfully exported as CSV format.`,
-            ),
+          onPress: handleExportCsv,
         },
         {
-          text: "Export as Excel (XLSX)",
-          onPress: () =>
-            Alert.alert(
-              "Export Success",
-              `Attendance records for ${session.courseCode} successfully exported as Excel spreadsheet.`,
-            ),
+          text: "Export as Excel Compatible (CSV)",
+          onPress: handleExportCsv,
         },
         ...(isActive
           ? [
